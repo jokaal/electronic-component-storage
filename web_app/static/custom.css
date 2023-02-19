@@ -1,0 +1,9 @@
+body {
+    padding-top: 5rem;
+}
+
+.dropdown-custom {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
