@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}
+Edit Component
+{% endblock %}
+{% block content %}
+{% if referrer %}
+<h5><a href="{{ referrer }}">Back</a></h5>
+{% endif %}
+<h1>Editing {{ component.name }}</h1>
+</br>
+<form method="POST">
+    <table class="table table-borderless text-right">
+        <tbody>
+            <tr>
+                <td>
+                    <h5>Name</h5>
+                </td>
+                <td>
+                    <input name="name" id="name" class="form-control w-75" type="text" placeholder="Name" required value="{{component.name}}"></input>
+                </td>
+            </tr>
+            <tr>
+                <td class="w-25">
+                    <h5>Location</h5>
+                </td>
+                <td>
+                    {% if component.location %}
+                    <input name="location" id="location" class="form-control w-75" type="text" placeholder="Location" value="{{component.location}}"></input>
+                    {% else %}
+                    <input name="location" id="location" class="form-control w-75" type="text" placeholder="Location"></input>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Value</h5>
+                </td>
+                <td>
+                    {% if component.value %}
+                    <input name="value" id="value" class="form-control w-75" type="text" placeholder="Value" value="{{component.value}}"></input>
+                    {% else %}
+                    <input name="value" id="value" class="form-control w-75" type="text" placeholder="Value"></input>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Description</h5>
+                </td>
+                <td>
+                    {% if component.description %}
+                    <textarea name="description" id="description" class="form-control w-75" placeholder="Description">{{component.description}}</textarea>
+                    {% else %}
+                    <textarea name="description" id="description" class="form-control w-75" placeholder="Description"></textarea>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Amount</h5>
+                </td>
+                <td>
+                    <input name="amount" id="amount" class="form-control w-75" type="number" placeholder="0" min="0" value="{{component.amount}}"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Minimum amount</h5>
+                </td>
+                <td>
+                    {% if component.minimum_amount %}
+                    <input name="minimumAmount" id="minimumAmount" class="form-control w-75" type="number" placeholder="0" min="0" value="{{component.minimum_amount}}"></input>
+                    {% else %}
+                    <input name="minimumAmount" id="minimumAmount" class="form-control w-75" type="number" placeholder="0" min="0"></input>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>URL</h5>
+                </td>
+                <td>
+                    {% if component.url %}
+                    <input name="url" id="url" class="form-control w-75" type="text" placeholder="e.g. 'https://www.google.com'" value="{{component.url}}"></input>
+                    {% else %}
+                    <input name="url" id="url" class="form-control w-75" type="text" placeholder="e.g. 'https://www.google.com'"></input>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="float-right" style="padding-right: 210px;">
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</form>
+{% endblock %}

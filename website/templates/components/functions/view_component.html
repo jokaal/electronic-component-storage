@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}
+Component
+{% endblock %}
+{% block content %}
+{% if referrer %}
+<h5><a href="{{ referrer }}">Back</a></h5>
+{% else %}
+<h5><a href="/components">Back</a></h5>
+{% endif %}
+<h1>{{ component.name }}
+    <button class="btn btn-sm btn-warning rounded-circle" onClick="window.location.href='../edit-component/{{component.id}}'">
+        <i class="fa fa-pencil" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-danger rounded-circle" onClick="deleteComponent({{ component.id }})">
+        <i class="fa fa-trash" aria-hidden="true"></i>
+    </button>
+</h1>
+<table class="table table-bordered text-center">
+    <tbody>
+        <tr>
+            <td class="w-25">
+                <h5>Location</h5>
+            </td>
+            <td>
+                {% if component.location %}
+                <h5>{{ component.location }}</h5>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h5>Value</h5>
+            </td>
+            <td>
+                {% if component.value %}
+                <h5>{{ component.value }}</h5>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h5>Description</h5>
+            </td>
+            <td>
+                {% if component.description %}
+                <h5>{{ component.description }}</h5>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h5>Amount</h5>
+            </td>
+            <td>
+                <h5>
+                    <button type="button" class="btn" onClick="removeOne({{ component.id }})">
+                        <i class="fa fa-minus" aria-hidden="true"></i>
+                    </button>
+                    <div class="bg-light border rounded-pill align-middle" style="display: inline-block;width: 160px; overflow: hidden; white-space: nowrap;">
+                        <span style="text-overflow: ellipsis;" id="amount-{{ component.id }}">{{ component.amount }}</span>
+                    </div>
+                    <button type="button" class="btn" onClick="addOne({{ component.id }})">
+                        <i class="fa fa-plus" aria-hidden="true"></i>
+                    </button>
+                </h5>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h5>Minimum amount</h5>
+            </td>
+            <td>
+                {% if component.minimum_amount %}
+                <h5>{{ component.minimum_amount }}</h5>
+                {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <h5>URL</h5>
+            </td>
+            <td>
+                {% if component.location %}
+                <h5><a href="{{component.url}}">{{ component.url }}</a></h5>
+                {% endif %}
+            </td>
+        </tr>
+    </tbody>
+
+</table>
+{% endblock %}

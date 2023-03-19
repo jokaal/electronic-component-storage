@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}
+Add Component
+{% endblock %}
+{% block content %}
+<h1>Add a new component:</h1>
+</br>
+{% if component %}
+<form method="POST">
+    <table class="table table-borderless text-right">
+        <tbody>
+            <tr>
+                <td>
+                    <h5>Name</h5>
+                </td>
+                <td>
+                    <input name="name" id="name" class="form-control w-75" type="text" placeholder="Name" required value="{{component.name}}"></input>
+                </td>
+            </tr>
+            <tr>
+                <td class="w-25">
+                    <h5>Location</h5>
+                </td>
+                <td>
+                    <input name="location" id="location" class="form-control w-75" type="text" placeholder="Location" value="{{component.location}}"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Value</h5>
+                </td>
+                <td>
+                    <input name="value" id="value" class="form-control w-75" type="text" placeholder="Value" value="{{component.value}}"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Description</h5>
+                </td>
+                <td>
+                    <textarea name="description" id="description" class="form-control w-75" placeholder="Description">{{component.description}}</textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Amount</h5>
+                </td>
+                <td>
+                    <input name="amount" id="amount" class="form-control w-75" type="number" placeholder="0" min="0" value="{{component.amount}}"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Minimum amount</h5>
+                </td>
+                <td>
+                    <input name="minimumAmount" id="minimumAmount" class="form-control w-75" type="number" placeholder="0" min="0" value="{{component.minimum_amount}}"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>URL</h5>
+                </td>
+                <td>
+                    <input name="url" id="url" class="form-control w-75" type="text" placeholder="e.g. 'https://www.google.com'" value="{{component.url}}"></input>
+
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="float-right" style="padding-right: 210px;">
+        <button type="submit" class="btn btn-primary">Add</button>
+    </div>
+</form>
+{% else %}
+<form method="POST">
+    <table class="table table-borderless text-right">
+        <tbody>
+            <tr>
+                <td>
+                    <h5>Name</h5>
+                </td>
+                <td>
+                    <input name="name" id="name" class="form-control w-75" type="text" placeholder="Name" required></input>
+                </td>
+            </tr>
+            <tr>
+                <td class="w-25">
+                    <h5>Location</h5>
+                </td>
+                <td>
+                    <input name="location" id="location" class="form-control w-75" type="text" placeholder="Location"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Value</h5>
+                </td>
+                <td>
+                    <input name="value" id="value" class="form-control w-75" type="text" placeholder="Value"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Description</h5>
+                </td>
+                <td>
+                    <textarea name="description" id="description" class="form-control w-75" placeholder="Description"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Amount</h5>
+                </td>
+                <td>
+                    <input name="amount" id="amount" class="form-control w-75" type="number" placeholder="0" min="0"></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h5>Minimum amount</h5>
+                </td>
+                <td>
+                    <input name="minimumAmount" id="minimumAmount" class="form-control w-75" type="number" placeholder="0" min="0"></input>
+                </td>
+            </tr>
+    
+            <tr>
+                <td>
+                    <h5>URL</h5>
+                </td>
+                <td>
+                    <input name="url" id="url" class="form-control w-75" type="text" placeholder="e.g. 'https://www.google.com'"></input>
+                </td>
+            </tr>
+        </tbody>
+    
+    </table>
+
+    <div class="float-right" style="padding-right: 210px;">
+        <button type="submit" class="btn btn-primary">Add</button>
+    </div>
+
+</form>
+{% endif %}
+{% endblock %}
