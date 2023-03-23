@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}
+Project
+{% endblock %}
+{% block content %}
+{% if referrer %}
+<h5><a href="{{ referrer }}">Back</a></h5>
+{% else %}
+<h5><a href="/projects">Back</a></h5>
+{% endif %}
+<h1>{{ project.name }}
+    <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px;" onClick="window.location.href='../edit-project/{{project.id}}'">
+        <i class="fa fa-pencil" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-danger rounded-circle" style="width: 31px;" onClick="deleteProject({{ project.id }})">
+        <i class="fa fa-trash" aria-hidden="true"></i>
+    </button>
+</h1>
+<table class="table table-bordered text-center">
+    <tbody>
+        <tr>
+            <td class="w-25">
+                <h5>Created at</h5>
+            </td>
+            <td>
+                
+                <h5>{{ project.created_at }}</h5>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h5>Status</h5>
+            </td>
+            <td>
+                {% if project.is_finished %}
+                <h5>FINISHED</h5>
+                {% else %}
+                <h5>UNFINISHED</h5>
+                {% endif %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+<h3>Components
+    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+    </button>
+    <button class="btn btn-sm btn-secondary rounded-pill">
+        <i class="fa fa-upload" aria-hidden="true"></i> Import
+    </button>
+</h3>
+{% endblock %}

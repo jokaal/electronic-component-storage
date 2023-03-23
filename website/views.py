@@ -1,14 +1,18 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from .models import Component
+from .models import Component, Project
 from . import db
 import json
 import re
 
 views = Blueprint('views', __name__)
 
+# HOME
+
 @views.route('/')
 def home():
     return render_template('home.html')
+
+# COMPONENT FUNCTIONS
 
 @views.route('/components', methods=['GET', 'POST'])
 def components():
@@ -145,3 +149,56 @@ def remove_one():
             component.amount -= 1
             db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
+
+
+# PROJECT FUNCTIONS
+
+@views.route('/projects', methods=['GET', 'POST'])
+def projects():
+    search = None if request.args.get('search') == '' else request.args.get('search')
+    if search:
+        # https://stackoverflow.com/questions/4926757/sqlalchemy-query-where-a-column-contains-a-substring
+        if '*' in search or '_' in search:
+            looking_for = search.replace('_', '__').replace('*', '%').replace('?', '_')
+        else:
+            looking_for = '%{0}%'.format(search)
+
+        query = Project.query.filter((Project.name.ilike(looking_for)))
+
+        return render_template('projects/projects.html', projects=query, search=request.args.get('search'))
+    return render_template('projects/projects.html', projects=Project.query.all())
+
+@views.route('/create-project', methods=['GET', 'POST'])
+def create_project():
+    if request.method == 'POST':
+        name = None if request.form.get('name') == '' else request.form.get('name') # Form return an empty string if not filled but we need null for database
+        new_project = Project(name=name)
+        
+        if not projectErrors(new_project):
+            db.session.add(new_project)
+            db.session.commit()
+            flash(f'Project \'{name}\' has been created!', category='success')
+            return redirect(url_for('views.view_project', id=new_project.id))
+        else:
+            return render_template('projects/functions/create_project.html', project=new_project)
+
+    return render_template('projects/functions/create_project.html')
+
+def projectErrors(project):
+    errors = False
+    messages = []
+
+    if not project.name: # HTML form already checks this
+        messages.append('Project must have a name!')
+        errors = True
+
+    if messages:
+        flash(' '.join(messages), category='error')
+
+    return errors
+
+@views.route('/project/<id>')
+def view_project(id):
+    if 'edit-project' and 'create-project' not in request.referrer: # Allows going back to search result but after editing search is lost
+        return render_template('projects/functions/view_project.html', project=Project.query.get(id), referrer=request.referrer)
+    return render_template('projects/functions/view_project.html', project=Project.query.get(id))

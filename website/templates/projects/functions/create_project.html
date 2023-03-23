@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}
+Add Project
+{% endblock %}
+{% block content %}
+<h1>Create a new project:</h1>
+</br>
+{% if project %}
+<form method="POST">
+    <table class="table table-borderless text-right">
+        <tbody>
+            <tr>
+                <td>
+                    <h5>Name</h5>
+                </td>
+                <td>
+                    <input name="name" id="name" class="form-control w-75" type="text" placeholder="Name" required value="{{component.name}}"></input>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="float-right" style="padding-right: 210px;">
+        <button type="submit" class="btn btn-primary">Create</button>
+    </div>
+</form>
+{% else %}
+<form method="POST">
+    <table class="table table-borderless text-right">
+        <tbody>
+            <tr>
+                <td>
+                    <h5>Name</h5>
+                </td>
+                <td>
+                    <input name="name" id="name" class="form-control w-75" type="text" placeholder="Name" required></input>
+                </td>
+            </tr>
+            
+        </tbody>
+    
+    </table>
+    <div class="float-right" style="padding-right: 210px;">
+        <button type="submit" class="btn btn-primary">Create</button>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

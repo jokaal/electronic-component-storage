@@ -18,7 +18,7 @@ def create_app():
     from .models import Component, Project, ProjectComponent
 
     with app.app_context():
-        #db.drop_all()
+        # db.drop_all()
         db.create_all()
 
     return app

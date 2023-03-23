@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}
+Projects
+{% endblock %}
+{% block content %}
+<h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
+    Projects 
+    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="window.location.href='create-project'">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+    </button>
+</h1>
+<div class="mb-2">
+    <form>
+        {% if search %}
+        <input class="rounded-pill w-25" type="search" name="search" id="search" placeholder=" Search" value="{{search}}"></input>
+        {% else %}
+        <input class="rounded-pill w-25" type="search" name="search" id="search" placeholder=" Search"></input>
+        {% endif %} 
+        <button type="submit" class="btn btn-sm btn-primary rounded-circle" style="width: 31px;"><i class="fa fa-search" aria-hidden="true"></i></button>
+    </form>
+</div>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Created At</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for project in projects %}
+        <tr>
+            <td>
+                <a href="/project/{{project.id}}">{{ project.name }}</a>
+            </td>
+            <td>
+                {{ project.created_at }}
+            </td>
+            <td>
+                {% if project.is_finished %}
+                    <span>FINISHED</span>
+                {% else %}
+                    <span>UNFINISHED</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+{% endblock %}

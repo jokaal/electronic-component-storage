@@ -9,10 +9,10 @@ Component
 <h5><a href="/components">Back</a></h5>
 {% endif %}
 <h1>{{ component.name }}
-    <button class="btn btn-sm btn-warning rounded-circle" onClick="window.location.href='../edit-component/{{component.id}}'">
+    <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px;" onClick="window.location.href='../edit-component/{{component.id}}'">
         <i class="fa fa-pencil" aria-hidden="true"></i>
     </button>
-    <button type="button" class="btn btn-sm btn-danger rounded-circle" onClick="deleteComponent({{ component.id }})">
+    <button type="button" class="btn btn-sm btn-danger rounded-circle" style="width: 31px;" onClick="deleteComponent({{ component.id }})">
         <i class="fa fa-trash" aria-hidden="true"></i>
     </button>
 </h1>
