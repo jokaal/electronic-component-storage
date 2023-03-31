@@ -1,6 +1,6 @@
 function deleteComponent(componentId) {
     if (confirm("Are you sure you want to delete this component?") == true) {
-        fetch("/delete-component", {
+        fetch("/components/delete", {
             method: "POST",
             body: JSON.stringify({ componentId: componentId }),
         }).then((_res) => {
@@ -10,7 +10,7 @@ function deleteComponent(componentId) {
 }
 
 function addOne(componentId) {
-    fetch("/add-one", {
+    fetch("/components/add-one", {
         method: "POST",
         body: JSON.stringify({ componentId: componentId }),
     }).then((_res) => {
@@ -22,7 +22,7 @@ function addOne(componentId) {
 }
 
 function removeOne(componentId) {
-    fetch("/remove-one", {
+    fetch("/components/remove-one", {
         method: "POST",
         body: JSON.stringify({ componentId: componentId }),
     }).then((_res) => {
@@ -32,5 +32,25 @@ function removeOne(componentId) {
         if (amount > 0) {
             amountDiv.innerHTML = amount - 1;
         }
+    })
+}
+
+function deleteProject(projectId) {
+    if (confirm("Are you sure you want to delete this project?") == true) {
+        fetch("/projects/delete", {
+            method: "POST",
+            body: JSON.stringify({ projectId: projectId }),
+        }).then((_res) => {
+            window.location.href = "/projects";
+        })
+    }
+}
+
+function addComponentToProject(projectId) {
+    fetch("/projects/add-component-to-project", {
+        method: "POST",
+        body: JSON.stringify({ projectId: projectId }),
+    }).then((_res) => {
+        window.location.href = "/projects/view/" + projectId;
     })
 }

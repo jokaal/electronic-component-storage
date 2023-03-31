@@ -1,0 +1,13 @@
+{
+    "database": {
+        "runLocally": true,
+        "dropDatabase": false,
+        "dbName": "database.db",
+        "dbServer": "",
+        "dbUsername": "",
+        "dbPassword": ""
+    },
+    "settings": {
+        "resultsPerPage": 10
+    }
+}

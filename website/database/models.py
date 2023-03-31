@@ -1,4 +1,4 @@
-from . import db
+from .. import db
 from sqlalchemy.sql import func
 
 class Component(db.Model):
@@ -10,15 +10,16 @@ class Component(db.Model):
     amount = db.Column(db.Integer, default=0, nullable=False)
     minimum_amount = db.Column(db.Integer)
     url = db.Column(db.String)
+    projects = db.Relationship('ProjectComponent', backref='component')
     
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    is_finished = db.Column(db.Boolean, default=False, nullable=False)
+    components = db.Relationship('ProjectComponent', backref='project', passive_deletes=True)
 
 class ProjectComponent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    component_id = db.Column(db.Integer, db.ForeignKey('component.id'))
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
-    amount = db.Column(db.Integer)
+    component_id = db.Column(db.Integer, db.ForeignKey('component.id'), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
+    amount = db.Column(db.Integer, default=0, nullable=False)

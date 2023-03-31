@@ -9,7 +9,7 @@ Project
 <h5><a href="/projects">Back</a></h5>
 {% endif %}
 <h1>{{ project.name }}
-    <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px;" onClick="window.location.href='../edit-project/{{project.id}}'">
+    <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px;" onClick="window.location.href='../edit/{{project.id}}'">
         <i class="fa fa-pencil" aria-hidden="true"></i>
     </button>
     <button type="button" class="btn btn-sm btn-danger rounded-circle" style="width: 31px;" onClick="deleteProject({{ project.id }})">
@@ -28,26 +28,53 @@ Project
                 
             </td>
         </tr>
-        <tr>
-            <td>
-                <h5>Status</h5>
-            </td>
-            <td>
-                {% if project.is_finished %}
-                <h5>FINISHED</h5>
-                {% else %}
-                <h5>UNFINISHED</h5>
-                {% endif %}
-            </td>
-        </tr>
     </tbody>
 </table>
 <h3>Components
-    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;">
+    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="addComponentToProject({{ project.id }})">
         <i class="fa fa-plus" aria-hidden="true"></i>
     </button>
     <button class="btn btn-sm btn-secondary rounded-pill">
         <i class="fa fa-upload" aria-hidden="true"></i> Import
     </button>
 </h3>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Location</th>
+            <th scope="col" class="w-25">Amount in storage</th>
+            <th scope="col" class="w-25">Amount needed</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for projectComponent in projectComponents|reverse %}
+        <tr>
+            <td>
+                {% if projectComponent.component %}
+                <a href="/components/view/{{projectComponent.component.id}}">{{ projectComponent.component.name }}</a>
+                {% else %}
+                <button class="btn btn-sm btn-primary rounded-pill">
+                    Choose
+                </button>
+                {% endif %}
+            </td>
+            <td>
+                {% if projectComponent.component.location %}
+                    {{ projectComponent.component.location }}
+                {% endif %}
+            </td>
+            <td>
+                {{ projectComponent.component.amount }}
+            </td>
+            <td>
+                {{ projectComponent.amount }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if buildMax <= 1000000 %}
+<h4>You can build this project {{ buildMax }} times.</h4>
+{% endif %}
 {% endblock %}

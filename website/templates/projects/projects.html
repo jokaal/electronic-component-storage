@@ -5,7 +5,7 @@ Projects
 {% block content %}
 <h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
     Projects 
-    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="window.location.href='create-project'">
+    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="window.location.href='create'">
         <i class="fa fa-plus" aria-hidden="true"></i>
     </button>
 </h1>
@@ -19,33 +19,41 @@ Projects
         <button type="submit" class="btn btn-sm btn-primary rounded-circle" style="width: 31px;"><i class="fa fa-search" aria-hidden="true"></i></button>
     </form>
 </div>
+<span>Found {{ pagination.total }} result(s)</span>
 <table class="table table-bordered text-center">
     <thead>
         <tr>
             <th scope="col">Name</th>
-            <th scope="col">Created At</th>
-            <th scope="col">Status</th>
+            <th scope="col" class="w-25">Created At</th>
         </tr>
     </thead>
     <tbody>
-        {% for project in projects %}
+        {% for project in pagination.items %}
         <tr>
             <td>
-                <a href="/project/{{project.id}}">{{ project.name }}</a>
+                <a href="/projects/view/{{project.id}}">{{ project.name }}</a>
             </td>
             <td>
                 {{ project.created_at }}
             </td>
-            <td>
-                {% if project.is_finished %}
-                    <span>FINISHED</span>
-                {% else %}
-                    <span>UNFINISHED</span>
-                {% endif %}
-            </td>
         </tr>
         {% endfor %}
     </tbody>
-
 </table>
+{% if pagination.has_prev %}
+<span>
+    <a class='page-number' href="{{ url_for('projects.list', page=pagination.prev_num) }}">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+    </a>
+</span>
+{% endif %}
+<span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+{% if pagination.has_next %}
+<span>
+    <a class='page-number'
+        href="{{ url_for('projects.list', page=pagination.next_num) }}">
+        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+    </a>
+</span>
+{% endif %}
 {% endblock %}
