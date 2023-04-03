@@ -8,7 +8,7 @@ Project
 {% else %}
 <h5><a href="/projects">Back</a></h5>
 {% endif %}
-<h1>{{ project.name }}
+<h1>Project: {{ project.name }}
     <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px;" onClick="window.location.href='../edit/{{project.id}}'">
         <i class="fa fa-pencil" aria-hidden="true"></i>
     </button>
@@ -16,20 +16,7 @@ Project
         <i class="fa fa-trash" aria-hidden="true"></i>
     </button>
 </h1>
-<table class="table table-bordered text-center">
-    <tbody>
-        <tr>
-            <td class="w-25">
-                <h5>Created at</h5>
-            </td>
-            <td>
-                
-                <h5>{{ project.created_at }}</h5>
-                
-            </td>
-        </tr>
-    </tbody>
-</table>
+<h5 class="text-muted">{{ project.created_at }}</h5>
 <h3>Components
     <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="addComponentToProject({{ project.id }})">
         <i class="fa fa-plus" aria-hidden="true"></i>
@@ -43,8 +30,8 @@ Project
         <tr>
             <th scope="col">Name</th>
             <th scope="col">Location</th>
-            <th scope="col" class="w-25">Amount in storage</th>
-            <th scope="col" class="w-25">Amount needed</th>
+            <th scope="col">Amount in storage</th>
+            <th scope="col">Amount needed</th>
         </tr>
     </thead>
     <tbody>
@@ -54,7 +41,7 @@ Project
                 {% if projectComponent.component %}
                 <a href="/components/view/{{projectComponent.component.id}}">{{ projectComponent.component.name }}</a>
                 {% else %}
-                <button class="btn btn-sm btn-primary rounded-pill">
+                <button class="btn btn-sm btn-primary rounded-pill" onclick="window.location.href='/projects/project-component/{{projectComponent.id}}';">
                     Choose
                 </button>
                 {% endif %}
@@ -64,11 +51,19 @@ Project
                     {{ projectComponent.component.location }}
                 {% endif %}
             </td>
-            <td>
+            <td style="width: 10%;">
                 {{ projectComponent.component.amount }}
             </td>
-            <td>
+            <td style="width: 10%;">
                 {{ projectComponent.amount }}
+                <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px; float: right;" onClick="editProjectComponentAmount({{projectComponent.id}}, {{projectComponent.project.id}})">
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
+            </td>
+            <td style="width: 5%;">
+                <button type="button" class="btn btn-sm btn-danger rounded-circle" style="width: 31px;" onClick="deleteProjectComponent({{projectComponent.id}}, {{projectComponent.project.id}})">
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                </button>
             </td>
         </tr>
         {% endfor %}

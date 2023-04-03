@@ -4,7 +4,7 @@ Components
 {% endblock %}
 {% block content %}
 <h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
-    Components 
+    Select a component for the project '{{project.name}}'
 </h1>
 <div class="mb-2">
     <form style="display: inline;">
@@ -15,7 +15,7 @@ Components
         {% endif %} 
         <button type="submit" class="btn btn-sm btn-primary rounded-circle" style="width: 31px;"><i class="fa fa-search" aria-hidden="true"></i></button>
     </form>
-    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="window.location.href='/components/add'">
+    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="window.location.href='/components/add/projectComponent/{{projectComponent.id}}'">
         <i class="fa fa-plus" aria-hidden="true"></i>
     </button>
 </div>
@@ -51,15 +51,12 @@ Components
                     {{ component.location }}
                 {% endif %}
             </td>
-            <td style="width: 191px;" class="align-middle">
-                <button type="button" class="btn" onClick="removeOne({{ component.id }})">
-                    <i class="fa fa-minus" aria-hidden="true"></i>
-                </button>
-                <div class="bg-light border rounded-pill align-middle" style="display: inline-block;width: 80px; overflow: hidden; white-space: nowrap;">
-                    <span style="text-overflow: ellipsis;" id="amount-{{ component.id }}">{{ component.amount }}</span>
-                </div>
-                <button type="button" class="btn" onClick="addOne({{ component.id }})">
-                    <i class="fa fa-plus" aria-hidden="true"></i>
+            <td style="width: 5%;">
+                {{ component.amount }}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-primary rounded-pill" onclick="chooseComponentForProject({{projectComponent.id}}, {{component.id}}, {{project.id}})">
+                    Select
                 </button>
             </td>
         </tr>

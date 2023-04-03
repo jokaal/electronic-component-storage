@@ -47,10 +47,44 @@ function deleteProject(projectId) {
 }
 
 function addComponentToProject(projectId) {
-    fetch("/projects/add-component-to-project", {
+    fetch("/projects/project-component/add", {
         method: "POST",
         body: JSON.stringify({ projectId: projectId }),
     }).then((_res) => {
         window.location.href = "/projects/view/" + projectId;
     })
+}
+
+function chooseComponentForProject(projectComponentId, componentId, projectId) {
+    fetch("/projects/project-component/add-component", {
+        method: "POST",
+        body: JSON.stringify({ projectComponentId: projectComponentId, componentId: componentId }),
+    }).then((_res) => {
+        window.location.href = "/projects/view/" + projectId;
+    })
+}
+
+function editProjectComponentAmount(projectComponentId, projectId) {
+    var answer = prompt("Enter a number: "); // https://stackoverflow.com/questions/46552085/javascript-force-specific-data-type-input-or-accept-only-digits-in-input
+    while (!/^0*?[0-9]\d*$/.test(answer)) { // Accepts all positive numbers above 0. Accepts numbers with leading zeroes e.g.: 0123, 00123.
+        alert("You did not enter a valid number.");
+        answer = prompt("Enter a number: ");
+    }
+    fetch("/projects/project-component/amount", {
+        method: "POST",
+        body: JSON.stringify({ projectComponentId: projectComponentId, amount: answer }),
+    }).then((_res) => {
+        window.location.href = "/projects/view/" + projectId;
+    })
+}
+
+function deleteProjectComponent(projectComponentId, projectId) {
+    if (confirm("Are you sure you want to delete this project component?") == true) {
+        fetch("/projects/project-component/delete", {
+            method: "POST",
+            body: JSON.stringify({ projectComponentId: projectComponentId }),
+        }).then((_res) => {
+            window.location.href = "/projects/view/" + projectId;
+        })
+    }
 }

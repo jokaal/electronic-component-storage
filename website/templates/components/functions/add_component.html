@@ -3,6 +3,9 @@
 Add Component
 {% endblock %}
 {% block content %}
+{% if referrer %}
+<h5><a href="{{ referrer }}">Back</a></h5>
+{% endif %}
 <h1>Add a new component:</h1>
 </br>
 {% if component %}

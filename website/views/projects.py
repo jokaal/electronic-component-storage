@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from ..database.models import Project, ProjectComponent
+from ..database.models import Project, ProjectComponent, Component
 from .. import db, config
 from ..helper import projectErrors, findMax
 import json
@@ -82,8 +82,8 @@ def delete():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
-@projects.route('/add-component-to-project', methods=['POST'])
-def add_project_component():
+@projects.route('/project-component/add', methods=['POST'])
+def addProjectComponent():
     project = json.loads(request.data)
     projectId = project['projectId']
     if project:
@@ -91,3 +91,65 @@ def add_project_component():
         db.session.add(projectComponent)
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
+
+
+@projects.route('/project-component/<id>', methods=['GET', 'POST'])
+def chooseProjectComponent(id):
+    projectComponent = ProjectComponent.query.get(id)
+
+    referrer = None
+    if 'project-component' not in request.referrer:
+        referrer=request.referrer
+
+    search = None if request.args.get('search') == '' else request.args.get('search')
+    page = request.args.get('page', 1, type=int)
+    query = Component.query
+
+    if search:
+        # https://stackoverflow.com/questions/4926757/sqlalchemy-query-where-a-column-contains-a-substring
+        if '*' in search or '_' in search:
+            looking_for = search.replace('_', '__').replace('*', '%').replace('?', '_')
+        else:
+            looking_for = '%{0}%'.format(search)
+        query = query.filter((Component.name.ilike(looking_for)) |
+                              (Component.value.ilike(looking_for)) |
+                                (Component.description.ilike(looking_for)))
+
+    pagination = query.paginate(page=page, per_page=per_page) # Pagination tutorial (a bit out of date): https://www.digitalocean.com/community/tutorials/how-to-query-tables-and-paginate-data-in-flask-sqlalchemy#step-5-displaying-long-record-lists-on-multiple-pages
+
+    return render_template('projects/functions/choose_component.html', pagination=pagination, search=search, projectComponent=projectComponent, project=projectComponent.project, referrer=referrer)
+
+
+@projects.route('/project-component/add-component', methods=['POST'])
+def addProjectComponentId():
+    jsonData = json.loads(request.data)
+    projectComponentId = jsonData['projectComponentId']
+    componentId = jsonData['componentId']
+    if projectComponentId and componentId:
+        projectComponent = ProjectComponent.query.get(projectComponentId)
+        projectComponent.component_id = componentId
+        db.session.add(projectComponent)
+        db.session.commit()
+    return jsonify({}) # Function is used in static/custom.js
+
+@projects.route('/project-component/amount', methods=['POST'])
+def editProjectComponentAmount():
+    jsonData = json.loads(request.data)
+    projectComponentId = jsonData['projectComponentId']
+    amount = jsonData['amount']
+    if projectComponentId and amount:
+        projectComponent = ProjectComponent.query.get(projectComponentId)
+        projectComponent.amount = amount
+        db.session.add(projectComponent)
+        db.session.commit()
+    return jsonify({}) # Function is used in static/custom.js
+
+@projects.route('/project-component/delete', methods=['POST'])
+def deleteProjectComponent():
+    jsonData = json.loads(request.data)
+    projectComponentId = jsonData['projectComponentId']
+    if projectComponentId:
+        projectComponent = ProjectComponent.query.get(projectComponentId)
+        db.session.delete(projectComponent)
+        db.session.commit()
+    return jsonify({}) # Function is used in static/custom.jss

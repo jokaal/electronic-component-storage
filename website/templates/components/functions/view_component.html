@@ -82,8 +82,8 @@ Component
                 <h5>URL</h5>
             </td>
             <td>
-                {% if component.location %}
-                <h5><a href="{{component.url}}">{{ component.url }}</a></h5>
+                {% if component.url %}
+                <h5><a href="{{component.url}}" target="_blank">{{ component.url }}</a></h5>
                 {% endif %}
             </td>
         </tr>

@@ -1,13 +1,11 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from ..database.models import Component
+from ..database.models import Component, ProjectComponent
 from .. import db, config
-from ..helper import componentErrors, projectErrors, findMax
+from ..helper import componentErrors
 import json
 
 components = Blueprint('components', __name__)
 per_page = config['settings']['resultsPerPage']
-
-# COMPONENT VIEWS
 
 @components.route('/', methods=['GET', 'POST'])
 def list():
@@ -52,6 +50,35 @@ def add():
             return render_template('components/functions/add_component.html', component=new_component)
 
     return render_template('components/functions/add_component.html')
+
+@components.route('/add/projectComponent/<id>', methods=['GET', 'POST'])
+def addProjectComponent(id):
+    projectComponent = ProjectComponent.query.get(id)
+
+    if request.method == 'POST':
+        name = None if request.form.get('name') == '' else request.form.get('name') # Form return an empty string if not filled but we need null for database
+        location = None if request.form.get('location') == '' else request.form.get('location')
+        value = None if request.form.get('value') == '' else request.form.get('value')
+        description = None if request.form.get('description') == '' else request.form.get('description')
+        amount = None if request.form.get('amount') == '' else request.form.get('amount')
+        minimumAmount = None if request.form.get('minimumAmount') == '' else request.form.get('minimumAmount')
+        url = None if request.form.get('url') == '' else request.form.get('url')
+        
+        new_component = Component(name=name, location=location, value=value, 
+                                  description=description, amount=amount, minimum_amount=minimumAmount, url=url)
+        
+        if not componentErrors(new_component):
+            db.session.add(new_component)
+            db.session.flush()
+            projectComponent.component_id = new_component.id
+            db.session.add(projectComponent)
+            db.session.commit()
+            flash(f'Component \'{name}\' has been added and selected for project \'{projectComponent.project.name}\'!', category='success')
+            return redirect(url_for('projects.view', id=projectComponent.project_id))
+        else:
+            return render_template('components/functions/add_component.html', component=new_component)
+
+    return render_template('components/functions/add_component.html', referrer=request.referrer)
 
 @components.route('/view/<id>')
 def view(id):

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}
+Components
+{% endblock %}
+{% block content %}
+<h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
+    Report 
+</h1>
+<div class="mb-2">
+</div>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Minimum Amount</th>
+            <th scope="col">Location</th>
+            <th scope="col">URL</th>
+            <th scope="col">Message</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for component in components %}
+        <tr>
+            <td>
+                <a href="/components/view/{{component.id}}">{{ component.name }}</a>
+            </td>
+            <td style="width: 5%;">
+                {{ component.amount }}
+            <td style="width: 5%">
+                {{ component.minimum_amount }}
+            </td>
+            <td style="width: 20%;">
+                {% if component.location %}
+                    {{ component.location }}
+                {% endif %}
+            </td>
+            <td style="width: 20%; max-width: 0; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
+                {% if component.url %}
+                    <a href="{{component.url}}" target="_blank">{{ component.url }}</a>
+                {% endif %}
+            </td>
+            <td style="width: 20%;">
+                {% if component.amount < component.minimum_amount %}
+                    <span class="text-danger">Component amount is {{ component.minimum_amount - component.amount }} below the minimum amount!</span>
+                {% else %}
+                    <span class="text-warning">Components are equal to the minimum amount!</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
