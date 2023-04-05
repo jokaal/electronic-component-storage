@@ -8,6 +8,6 @@
         "dbPassword": ""
     },
     "settings": {
-        "resultsPerPage": 10
+        "resultsPerPage": 50
     }
 }

@@ -29,6 +29,13 @@ def list():
 
 @components.route('/add', methods=['GET', 'POST'])
 def add():
+
+    # Referrer allows saving search but it's lost after another function and creates an infinite loop.
+    referrer = None
+    list = ['edit','add','view','remove']
+    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+        referrer=request.referrer
+
     if request.method == 'POST':
         name = None if request.form.get('name') == '' else request.form.get('name') # Form return an empty string if not filled but we need null for database
         location = None if request.form.get('location') == '' else request.form.get('location')
@@ -49,11 +56,17 @@ def add():
         else:
             return render_template('components/functions/add_component.html', component=new_component)
 
-    return render_template('components/functions/add_component.html')
+    return render_template('components/functions/add_component.html', referrer=referrer)
 
 @components.route('/add/projectComponent/<id>', methods=['GET', 'POST'])
 def addProjectComponent(id):
-    projectComponent = ProjectComponent.query.get(id)
+    projectComponent = ProjectComponent.query.get_or_404(id)
+
+    # Referrer allows saving search but it's lost after another function and creates an infinite loop.
+    referrer = None
+    list = ['edit','add','view','remove']
+    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+        referrer=request.referrer
 
     if request.method == 'POST':
         name = None if request.form.get('name') == '' else request.form.get('name') # Form return an empty string if not filled but we need null for database
@@ -78,18 +91,23 @@ def addProjectComponent(id):
         else:
             return render_template('components/functions/add_component.html', component=new_component)
 
-    return render_template('components/functions/add_component.html', referrer=request.referrer)
+    return render_template('components/functions/add_component.html', referrer=referrer)
 
 @components.route('/view/<id>')
 def view(id):
+    component = Component.query.get_or_404(id)
+
+    # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
-    if 'edit' not in request.referrer: # Allows going back to search result but after editing search is lost
+    list = ['edit','add','components/view','remove']
+    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
-    return render_template('components/functions/view_component.html', component=Component.query.get(id), referrer=referrer)
+
+    return render_template('components/functions/view_component.html', component=component, referrer=referrer)
 
 @components.route('/edit/<id>', methods=['GET', 'POST'])
 def edit(id):
-    component = Component.query.get(id)
+    component = Component.query.get_or_404(id)
 
     if request.method == 'POST':
         
@@ -115,14 +133,15 @@ def edit(id):
             flash(f'Component \'{name}\' has been saved!', category='success')
             return redirect(url_for('components.view', id=id))
 
-    return render_template('components/functions/edit_component.html', component=component, referrer=request.referrer)
+    return render_template('components/functions/edit_component.html', component=component)
 
 @components.route('/delete', methods=['POST'])
 def delete():
     component = json.loads(request.data)
     componentId = component['componentId']
-    component = Component.query.get(componentId)
+    component = Component.query.get_or_404(componentId)
     if component:
+        ProjectComponent.query.filter_by(component_id=componentId).delete() # Removes components from project
         db.session.delete(component)
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
@@ -131,7 +150,7 @@ def delete():
 def add_one():
     component = json.loads(request.data)
     componentId = component['componentId']
-    component = Component.query.get(componentId)
+    component = Component.query.get_or_404(componentId)
     if component:
         component.amount += 1
         db.session.commit()
@@ -141,7 +160,7 @@ def add_one():
 def remove_one():
     component = json.loads(request.data)
     componentId = component['componentId']
-    component = Component.query.get(componentId)
+    component = Component.query.get_or_404(componentId)
     if component:
         if component.amount > 0:
             component.amount -= 1

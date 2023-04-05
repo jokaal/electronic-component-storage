@@ -17,6 +17,7 @@ Project
     </button>
 </h1>
 <h5 class="text-muted">{{ project.created_at }}</h5>
+<hr>
 <h3>Components
     <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="addComponentToProject({{ project.id }})">
         <i class="fa fa-plus" aria-hidden="true"></i>
@@ -30,6 +31,7 @@ Project
         <tr>
             <th scope="col">Name</th>
             <th scope="col">Location</th>
+            <th scope="col">Comment</th>
             <th scope="col">Amount in storage</th>
             <th scope="col">Amount needed</th>
         </tr>
@@ -46,10 +48,18 @@ Project
                 </button>
                 {% endif %}
             </td>
-            <td>
+            <td style="width: 20%;">
                 {% if projectComponent.component.location %}
                     {{ projectComponent.component.location }}
                 {% endif %}
+            </td>
+            <td style="width: 30%;">
+                {% if projectComponent.comment %}
+                    {{ projectComponent.comment }}
+                {% endif %}
+                <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px; float: right;" onClick="editProjectComponentComment({{projectComponent.id}}, {{projectComponent.project.id}})">
+                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
             </td>
             <td style="width: 10%;">
                 {{ projectComponent.component.amount }}
@@ -69,7 +79,29 @@ Project
         {% endfor %}
     </tbody>
 </table>
-{% if buildMax <= 1000000 %}
-<h4>You can build this project {{ buildMax }} times.</h4>
+
+{% if buildInProgress %}
+    <hr>
+    <h4>Build currently in progress.</h4>
+    <form method="GET" action="/projects/build/{{project.id}}">
+        <input type="hidden" id="continue" name="continue" value="true">
+        <button class="btn btn-sm btn-primary rounded-pill" style="display: inline;" type="submit">
+            Continue
+        </button>
+    </form>
+{% else %}
+    {% if buildMax <= 1000000 %}
+    <hr>
+    <h4>You can build this project {{ buildMax }} time(s).</h4>
+        {% if buildMax > 0 %}
+        <form method="POST" action="/projects/build/{{project.id}}">
+            Start building this project <input name="buildAmount" id="buildAmount" class="form-control" style="width: 5rem; display: inline;" type="number" placeholder="0" min="0" max="{{buildMax}}" required></input> times
+            <button class="btn btn-sm btn-primary rounded-pill" style="display: inline;" type="submit">
+                Confirm
+            </button>
+        </form>
+        {% endif %}
+    {% endif %}
 {% endif %}
+
 {% endblock %}

@@ -3,6 +3,11 @@
 Add Project
 {% endblock %}
 {% block content %}
+{% if referrer %}
+<h5><a href="{{referrer}}">Back</a></h5>
+{% else %}
+<h5><a href="/projects">Back</a></h5>
+{% endif %}
 <h1>Create a new project:</h1>
 </br>
 {% if project %}

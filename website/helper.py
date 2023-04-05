@@ -1,5 +1,7 @@
 from flask import flash
 import re, sys, math
+from .database.models import Project, ProjectComponent, Component
+from . import db, config
 
 def componentErrors(component):
     errors = False
@@ -49,10 +51,10 @@ def findMax(projectComponents):
     for projectComponent in projectComponents:
         amountNeeded = projectComponent.amount
         if not projectComponent.component:
-            continue
+            return 0
         amountStored = projectComponent.component.amount
         if amountNeeded > amountStored:
-            buildMax = 0
+            return 0
         else:
             if amountNeeded != 0:
                 canBuild = math.floor(amountStored / amountNeeded)

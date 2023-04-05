@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, abort
 from ..database.models import Project, ProjectComponent, Component
 from .. import db, config
 from ..helper import projectErrors, findMax
@@ -26,6 +26,14 @@ def list():
 
 @projects.route('/create', methods=['GET', 'POST'])
 def create():
+
+    # Referrer allows saving search but it's lost after another function and creates an infinite loop.
+    referrer = None
+    list = ['edit','create','view','build','project-component']
+    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+        referrer=request.referrer
+
+
     if request.method == 'POST':
         name = None if request.form.get('name') == '' else request.form.get('name') # Form return an empty string if not filled but we need null for database
         new_project = Project(name=name)
@@ -38,28 +46,34 @@ def create():
         else:
             return render_template('projects/functions/create_project.html', project=new_project)
 
-    return render_template('projects/functions/create_project.html')
+    return render_template('projects/functions/create_project.html', referrer=referrer)
 
 @projects.route('/view/<id>')
 def view(id):
-    project = Project.query.get(id)
+    project = Project.query.get_or_404(id)
     projectComponents = ProjectComponent.query.filter_by(project_id=id)
+    inProgressComponents = projectComponents.filter(ProjectComponent.build_amount.isnot(None)).all()
 
+    buildInProgress = False
+    if inProgressComponents:
+        buildInProgress = True
     buildMax = findMax(projectComponents)
 
+    # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
-    if 'edit' and 'create' and f'projects/view/{id}' not in request.referrer: # Allows going back to search result but after editing search is lost
+    list = ['edit','create','view','build','project-component']
+    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
 
-    return render_template('projects/functions/view_project.html', project=project, projectComponents=projectComponents, referrer=referrer, buildMax=buildMax)
+    return render_template('projects/functions/view_project.html', project=project, projectComponents=projectComponents, referrer=referrer, buildMax=buildMax, buildInProgress=buildInProgress)
 
 @projects.route('/edit/<id>', methods=['GET', 'POST'])
 def edit(id):
-    project = Project.query.get(id)
+    project = Project.query.get_or_404(id)
 
     if request.method == 'POST':
         
-        name = None if request.form.get('name') == '' else request.form.get('name') # Form return an empty string if not filled but we need null for database
+        name = None if request.form.get('name') == '' else request.form.get('name') # Form returns an empty string if not filled but we need null for database
         
         project.name = name
         
@@ -69,14 +83,14 @@ def edit(id):
             flash(f'Project \'{name}\' has been saved!', category='success')
             return redirect(url_for('projects.view', id=id))
 
-    return render_template('projects/functions/edit_project.html', project=project, referrer=request.referrer)
+    return render_template('projects/functions/edit_project.html', project=project)
 
 
 @projects.route('/delete', methods=['POST'])
 def delete():
     project = json.loads(request.data)
     projectId = project['projectId']
-    project = Project.query.get(projectId)
+    project = Project.query.get_or_404(projectId)
     if project:
         db.session.delete(project)
         db.session.commit()
@@ -95,7 +109,7 @@ def addProjectComponent():
 
 @projects.route('/project-component/<id>', methods=['GET', 'POST'])
 def chooseProjectComponent(id):
-    projectComponent = ProjectComponent.query.get(id)
+    projectComponent = ProjectComponent.query.get_or_404(id)
 
     referrer = None
     if 'project-component' not in request.referrer:
@@ -106,7 +120,7 @@ def chooseProjectComponent(id):
     query = Component.query
 
     if search:
-        # https://stackoverflow.com/questions/4926757/sqlalchemy-query-where-a-column-contains-a-substring
+        #https://stackoverflow.com/questions/4926757/sqlalchemy-query-where-a-column-contains-a-substring
         if '*' in search or '_' in search:
             looking_for = search.replace('_', '__').replace('*', '%').replace('?', '_')
         else:
@@ -138,8 +152,20 @@ def editProjectComponentAmount():
     projectComponentId = jsonData['projectComponentId']
     amount = jsonData['amount']
     if projectComponentId and amount:
-        projectComponent = ProjectComponent.query.get(projectComponentId)
+        projectComponent = ProjectComponent.query.get_or_404(projectComponentId)
         projectComponent.amount = amount
+        db.session.add(projectComponent)
+        db.session.commit()
+    return jsonify({}) # Function is used in static/custom.js
+
+@projects.route('/project-component/comment', methods=['POST'])
+def editProjectComponentComment():
+    jsonData = json.loads(request.data)
+    projectComponentId = jsonData['projectComponentId']
+    comment = jsonData['comment']
+    if projectComponentId:
+        projectComponent = ProjectComponent.query.get_or_404(projectComponentId)
+        projectComponent.comment = comment
         db.session.add(projectComponent)
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
@@ -149,7 +175,76 @@ def deleteProjectComponent():
     jsonData = json.loads(request.data)
     projectComponentId = jsonData['projectComponentId']
     if projectComponentId:
-        projectComponent = ProjectComponent.query.get(projectComponentId)
+        projectComponent = ProjectComponent.query.get_or_404(projectComponentId)
         db.session.delete(projectComponent)
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.jss
+
+@projects.route('/build/<id>', methods=['GET','POST'])
+def build(id):
+
+    project = Project.query.get_or_404(id)
+    projectComponents = ProjectComponent.query.filter_by(project_id=id)
+
+    if request.method == 'POST':
+        buildAmount = int(None if request.form.get('buildAmount') == '' else request.form.get('buildAmount'))
+        buildMax = findMax(projectComponents)
+        if not buildAmount or buildAmount > buildMax or buildAmount == 0:
+            flash(f'Can\'t build project {buildAmount} times!', category='error')
+            return render_template('projects/functions/view_project.html', project=project, projectComponents=projectComponents, buildMax=buildMax)
+        
+        for projectComponent in projectComponents:
+            projectComponent.build_amount = projectComponent.amount * buildAmount
+            db.session.add(projectComponent)
+        db.session.commit()
+                    
+    inProgressComponents = projectComponents.filter(ProjectComponent.build_amount.isnot(None)).all()
+    if len(inProgressComponents) is not 0:
+        return render_template('projects/functions/build_project.html', project=project, projectComponents=inProgressComponents)
+    else:
+        return abort(404)
+
+@projects.route('/build/end', methods=['POST'])
+def endBuild():
+    project = json.loads(request.data)
+    projectId = project['projectId']
+    project = Project.query.get_or_404(projectId)
+    if project:
+        projectComponents = ProjectComponent.query.filter_by(project_id=project.id)
+        for projectComponent in projectComponents:
+            projectComponent.build_amount = None
+        db.session.commit()
+    return jsonify({}) # Function is used in static/custom.js
+
+@projects.route('/project-component/build', methods=['POST'])
+def removeComponentsForBuild():
+    id = None if request.form.get('id') == '' else request.form.get('id')
+    projectComponent = ProjectComponent.query.get_or_404(id)
+    project = Project.query.get(projectComponent.project_id)
+    projectComponents = ProjectComponent.query.filter_by(project_id=projectComponent.project.id)
+    inProgressComponents = projectComponents.filter(ProjectComponent.build_amount.isnot(None)).all()
+
+    # Check if project component has a value
+    if not projectComponent.build_amount:
+        return abort(404)
+
+    # If there's not enough components in storage then flash an error (happens when building two projects at the same time)
+    if projectComponent.build_amount > projectComponent.component.amount:
+        flash(f'Can\'t have less than 0 components in storage!', category='error')
+        return render_template('projects/functions/build_project.html', project=project, projectComponents=inProgressComponents)
+
+    # First remove required amount from storage and set build_amount to null
+    projectComponent.component.amount -= projectComponent.build_amount
+    projectComponent.build_amount = None
+    db.session.commit()
+
+    # Check if any components left in build
+    inProgressComponents = projectComponents.filter(ProjectComponent.build_amount.isnot(None)).all()
+    if len(inProgressComponents) is not 0:
+        return render_template('projects/functions/build_project.html', project=project, projectComponents=inProgressComponents)
+    else:
+        buildMax = findMax(projectComponents)
+        flash('Finished building project!', category='success')
+        return render_template('projects/functions/view_project.html', project=project, projectComponents=projectComponents, buildMax=buildMax)
+        
+

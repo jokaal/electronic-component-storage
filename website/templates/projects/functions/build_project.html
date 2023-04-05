@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}
+Project
+{% endblock %}
+{% block content %}
+<h5><a href="/projects/view/{{project.id}}">Back</a></h5>
+<h1>Building project: {{ project.name }}</h1>
+<hr>
+<h3>Required Components</h3>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Location</th>
+            <th scope="col">Comment</th>
+            <th scope="col">Amount in storage</th>
+            <th scope="col">Amount needed for build</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for projectComponent in projectComponents %}
+        <tr>
+            <td>
+                <a href="/components/view/{{projectComponent.component.id}}">{{ projectComponent.component.name }}</a>
+            </td>
+            <td style="width: 20%;">
+                {% if projectComponent.component.location %}
+                    {{ projectComponent.component.location }}
+                {% endif %}
+            </td>
+            <td style="width: 30%;">
+                {% if projectComponent.comment %}
+                    {{ projectComponent.comment }}
+                {% endif %}
+            </td>
+            <td style="width: 10%;">
+                {{ projectComponent.component.amount }}
+            </td>
+            <td style="width: 10%;">
+                {{ projectComponent.build_amount }}
+            </td>
+            <td style="width: 10%;">
+                <form method="POST" action="/projects/project-component/build">
+                    <input type="hidden" id="id" name="id" value="{{projectComponent.id}}">
+                    <button class="btn btn-sm btn-secondary rounded" type="submit">
+                        Remove from storage
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button class="btn btn-sm btn-danger rounded-pill" onclick="endBuild({{project.id}})">
+    End Build
+</button>
+
+{% endblock %}

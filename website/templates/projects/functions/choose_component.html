@@ -3,7 +3,8 @@
 Components
 {% endblock %}
 {% block content %}
-<h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
+<h5><a href="../../projects/view/{{project.id}}">Back</a></h5>
+<h1 style="padding-right: 5px; padding-bottom: 5px;">
     Select a component for the project '{{project.name}}'
 </h1>
 <div class="mb-2">
@@ -63,20 +64,22 @@ Components
         {% endfor %}
     </tbody>
 </table>
-{% if pagination.has_prev %}
-<span>
-    <a class='page-number' href="{{ url_for('components.list', page=pagination.prev_num) }}">
-        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-    </a>
-</span>
-{% endif %}
-<span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
-{% if pagination.has_next %}
-<span>
-    <a class='page-number'
-        href="{{ url_for('components.list', page=pagination.next_num) }}">
-        <i class="fa fa-arrow-right" aria-hidden="true"></i>
-    </a>
-</span>
-{% endif %}
+<div style="text-align: center;">
+    {% if pagination.has_prev %}
+    <span>
+        <a class='page-number' href="{{ url_for('projects.chooseProjectComponent', id=projectComponent.id, page=pagination.prev_num) }}">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        </a>
+    </span>
+    {% endif %}
+    <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+    {% if pagination.has_next %}
+    <span>
+        <a class='page-number'
+            href="{{ url_for('projects.chooseProjectComponent', id=projectComponent.id, page=pagination.next_num) }}">
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </a>
+    </span>
+    {% endif %}
+</div>
 {% endblock %}

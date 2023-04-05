@@ -3,10 +3,8 @@
 Edit Project
 {% endblock %}
 {% block content %}
-{% if referrer %}
-<h5><a href="{{ referrer }}">Back</a></h5>
-{% endif %}
-<h1>Editing {{ project.name }}</h1>
+<h5><a href="../view/{{project.id}}">Back</a></h5>
+<h1>Editing project: {{ project.name }}</h1>
 </br>
 <form method="POST">
     <table class="table table-borderless text-right">

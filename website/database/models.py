@@ -22,4 +22,6 @@ class ProjectComponent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     component_id = db.Column(db.Integer, db.ForeignKey('component.id'), nullable=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
-    amount = db.Column(db.Integer, default=0, nullable=False)
+    amount = db.Column(db.Integer, default=1, nullable=False)
+    build_amount = db.Column(db.Integer, default=None)
+    comment = db.Column(db.String, default=None)

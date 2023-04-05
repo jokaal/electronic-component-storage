@@ -19,7 +19,7 @@ Components
         <i class="fa fa-plus" aria-hidden="true"></i>
     </button>
 </div>
-<span>Found {{ pagination.total }} result(s)</span>
+<span class="text-muted">Found {{ pagination.total }} result(s)</span>
 <table class="table table-bordered text-center">
     <thead>
         <tr>
@@ -36,7 +36,7 @@ Components
             <td>
                 <a href="/components/view/{{component.id}}">{{ component.name }}</a>
             </td>
-            <td style="width: 5%;">
+            <td style="width: 10%;">
                 {% if component.value %}
                     {{ component.value }}
                 {% endif %}
@@ -66,20 +66,22 @@ Components
         {% endfor %}
     </tbody>
 </table>
-{% if pagination.has_prev %}
-<span>
-    <a class='page-number' href="{{ url_for('components.list', page=pagination.prev_num) }}">
-        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-    </a>
-</span>
-{% endif %}
-<span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
-{% if pagination.has_next %}
-<span>
-    <a class='page-number'
-        href="{{ url_for('components.list', page=pagination.next_num) }}">
-        <i class="fa fa-arrow-right" aria-hidden="true"></i>
-    </a>
-</span>
-{% endif %}
+<div style="text-align: center;">
+    {% if pagination.has_prev %}
+    <span>
+        <a class='page-number' href="{{ url_for('components.list', page=pagination.prev_num) }}">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        </a>
+    </span>
+    {% endif %}
+    <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+    {% if pagination.has_next %}
+    <span>
+        <a class='page-number'
+            href="{{ url_for('components.list', page=pagination.next_num) }}">
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </a>
+    </span>
+    {% endif %}
+</div>
 {% endblock %}

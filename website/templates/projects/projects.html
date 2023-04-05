@@ -5,12 +5,9 @@ Projects
 {% block content %}
 <h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
     Projects 
-    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="window.location.href='create'">
-        <i class="fa fa-plus" aria-hidden="true"></i>
-    </button>
 </h1>
 <div class="mb-2">
-    <form>
+    <form style="display: inline;">
         {% if search %}
         <input class="rounded-pill w-25" type="search" name="search" id="search" placeholder=" Search" value="{{search}}"></input>
         {% else %}
@@ -18,8 +15,11 @@ Projects
         {% endif %} 
         <button type="submit" class="btn btn-sm btn-primary rounded-circle" style="width: 31px;"><i class="fa fa-search" aria-hidden="true"></i></button>
     </form>
+    <button class="btn btn-sm btn-success rounded-circle" style="width: 31px;" onClick="window.location.href='create'">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+    </button>
 </div>
-<span>Found {{ pagination.total }} result(s)</span>
+<span class="text-muted">Found {{ pagination.total }} result(s)</span>
 <table class="table table-bordered text-center">
     <thead>
         <tr>
@@ -40,20 +40,22 @@ Projects
         {% endfor %}
     </tbody>
 </table>
-{% if pagination.has_prev %}
-<span>
-    <a class='page-number' href="{{ url_for('projects.list', page=pagination.prev_num) }}">
-        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-    </a>
-</span>
-{% endif %}
-<span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
-{% if pagination.has_next %}
-<span>
-    <a class='page-number'
-        href="{{ url_for('projects.list', page=pagination.next_num) }}">
-        <i class="fa fa-arrow-right" aria-hidden="true"></i>
-    </a>
-</span>
-{% endif %}
+<div style="text-align: center;">
+    {% if pagination.has_prev %}
+    <span>
+        <a class='page-number' href="{{ url_for('projects.list', page=pagination.prev_num) }}">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        </a>
+    </span>
+    {% endif %}
+    <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+    {% if pagination.has_next %}
+    <span>
+        <a class='page-number'
+            href="{{ url_for('projects.list', page=pagination.next_num) }}">
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </a>
+    </span>
+    {% endif %}
+</div>
 {% endblock %}
