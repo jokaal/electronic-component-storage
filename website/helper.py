@@ -60,3 +60,7 @@ def findMax(projectComponents):
                 canBuild = math.floor(amountStored / amountNeeded)
                 buildMax = canBuild if canBuild < buildMax else buildMax
     return buildMax
+
+def allowedFile(fileName, allowed):
+    return '.' in fileName and \
+           fileName.rsplit('.', 1)[1].lower() in allowed

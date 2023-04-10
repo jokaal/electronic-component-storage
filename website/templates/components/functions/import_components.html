@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}
+Components
+{% endblock %}
+{% block content %}
+<h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
+    Importing Components
+</h1>
+{% if components %}
+<h5>
+    Check through all the components and then confirm to add all of them to the database.
+</h5>
+<form method="post" action="/components/import/confirm">
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Value</th>
+                <th scope="col">Description</th>
+                <th scope="col">Location</th>
+                <th scope="col">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for component in components %}
+            <input name="name" id="name" type="hidden" value="{{component.name}}">
+            <input name="value" id="value" type="hidden" value="{{component.value}}">
+            <input name="description" id="description" type="hidden" value="{{component.description}}">
+            <input name="location" id="location" type="hidden" value="{{component.location}}">
+            <input name="amount" id="amount" type="hidden" value="{{component.amount}}">
+            <input name="minimumAmount" id="minimumAmount" type="hidden" value="{{component.minimum_amount}}">
+            <input name="url" id="url" type="hidden" value="{{component.url}}"> 
+            <tr>
+                <td>
+                    {{ component.name }}
+                </td>
+                <td style="width: 10%;">
+                    {% if component.description %}
+                        {{ component.value }}
+                    {% endif %}
+                </td>
+                <td style="width: 30%;">
+                    {% if component.description %}
+                        {{ component.description }}
+                        
+                    {% endif %}
+                </td>
+                <td style="width: 20%;">
+                    {% if component.location %}
+                        {{ component.location }}
+                              
+                    {% endif %}
+                </td>
+                <td style="width: 5%;">
+                    {% if component.amount %}
+                        {{ component.amount }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </td> 
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h6>Note: Import does not find and match existing components, make sure that by importing you do not have duplicates in your database!</h6>
+    <button type="submit" class="btn btn-primary">Confirm</button>
+</form>
+{% else %}
+<div>
+    <h5>
+        Import multiple components by uploading a .json file that is structured like the following example:
+    </h5>
+    <details>
+        <summary>example.json</summary>
+        <div class="ml-3 bg-light border rounded w-50">
+            <pre id="text"></pre>
+            <script>
+                var data = {
+                    "components": [
+                        {
+                            "name": "first component",
+                            "location": null,
+                            "value": null,
+                            "description": null,
+                            "amount": 10,
+                            "minimumAmount": null,
+                            "url": null
+                        },
+                        {
+                            "name": "example name",
+                            "location": "example location",
+                            "value": "example value",
+                            "description": "example description",
+                            "amount": 5,
+                            "minimumAmount": 2,
+                            "url": "https://www.google.com"
+                        },
+                        {
+                            "name": "short example",
+                            "amount": 1
+                        },
+                        {
+                            "name": "very short example"
+                        }
+                    ]
+                };
+                document.getElementById("text").innerHTML = JSON.stringify(data, null, 4);
+            </script>
+        </div>
+    </details>
+    
+</div>
+<div class="w-25 mt-3">
+    <form method="POST" enctype="multipart/form-data">
+        <input class="form-control mb-3" type=file name=file id="file">
+        <button type="submit" class="btn btn-primary">Import</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
