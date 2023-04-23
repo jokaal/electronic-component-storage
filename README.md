@@ -28,24 +28,27 @@ pip install -r requirements.txt
 ```
 
 4. Run the automatic tests and make sure that everything passes:
-
+```
+pytest
+```
 
 5. Start the application server:
 ```
-waitress-serve --host 127.0.0.1 --call website:create_app
+waitress-serve --host 127.0.0.1 --port 8001 --call website:create_app
 ```
 
-6. Your application can now be found by going to http://127.0.0.1:8080 (or whatever address you set it to).
+6. Your application can now be found by going to http://127.0.0.1:8001 (or whatever address you set it to).
 
 
 ## Development
 
-For development it is recommended to use the in-built server as it allows for debugging and automatically refreshes after file changes. Running the development server is done by running the code found in *main.py*.
+For development it is recommended to use the built-in server as it allows for debugging and automatically refreshes after file changes. Running the development server is done by running the code found in *main.py*.
 
 ### TODO list:
 
 1. BOM importing for projects
-2. Other stuff
+2. Copy project to new project
+3. Export and import current storage state
 
 This is a very minimalistic solution for component storage tracking and as such it is missing many features that other solutions might have. To make developing easier for the future, code is kept well documented and application architecture has to be solid.
 

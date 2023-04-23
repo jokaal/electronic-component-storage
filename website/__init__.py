@@ -40,7 +40,7 @@ def create_app() -> Flask:
         DB_USERNAME = config['database']['dbUsername']
         DB_PASSWORD = config['database']['dbPassword']
         DB_SERVER = config['database']['dbServer']
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}'
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}'
 
     # Establishing database connection
     db.init_app(app)
