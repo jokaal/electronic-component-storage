@@ -1,12 +1,19 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, abort
 from ..database.models import Project, ProjectComponent, Component
 from .. import db, config
-from ..helper import projectErrors, findMax
-import json
+from ..helper import projectErrors, findMax, allowedFile
+import json, csv
 
+# Creating Blueprint, URL prefix is '/components'
 projects = Blueprint('projects', __name__)
+
+# Number of results to show per page as per configuration
 per_page = config['settings']['resultsPerPage']
 
+# Maps list() function as handler for address '/projects'
+# Used to render a list of all projects
+# Queries projects based on search and how many to show per page
+# Renders ./templates/projects/projects.html template with query result
 @projects.route('/', methods=['GET', 'POST'])
 def list():
     search = None if request.args.get('search') == '' else request.args.get('search')
@@ -24,13 +31,15 @@ def list():
 
     return render_template('projects/projects.html', pagination=pagination, search=search)
 
+# Maps create() function as handler for address '/projects/create'
+# Renders ./templates/projects/functions/create_project.html
 @projects.route('/create', methods=['GET', 'POST'])
 def create():
 
     # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
     list = ['edit','create','view','build','project-component']
-    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+    if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
 
 
@@ -48,6 +57,8 @@ def create():
 
     return render_template('projects/functions/create_project.html', referrer=referrer)
 
+# Maps view() function as handler for address '/projects/view/<id>'
+# Renders ./templates/projects/functions/view_project.html
 @projects.route('/view/<id>')
 def view(id):
     project = Project.query.get_or_404(id)
@@ -62,11 +73,13 @@ def view(id):
     # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
     list = ['edit','create','view','build','project-component']
-    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+    if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
 
     return render_template('projects/functions/view_project.html', project=project, projectComponents=projectComponents, referrer=referrer, buildMax=buildMax, buildInProgress=buildInProgress)
 
+# Maps edit() function as handler for address '/projects/edit/<id>'
+# Renders ./templates/projects/functions/edit_project.html
 @projects.route('/edit/<id>', methods=['GET', 'POST'])
 def edit(id):
     project = Project.query.get_or_404(id)
@@ -85,7 +98,8 @@ def edit(id):
 
     return render_template('projects/functions/edit_project.html', project=project)
 
-
+# Maps delete() function as handler for address '/projects/delete'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @projects.route('/delete', methods=['POST'])
 def delete():
     project = json.loads(request.data)
@@ -96,6 +110,8 @@ def delete():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
+# Maps addProjectComponent() function as handler for address '/projects/project-component/add'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @projects.route('/project-component/add', methods=['POST'])
 def addProjectComponent():
     project = json.loads(request.data)
@@ -106,7 +122,8 @@ def addProjectComponent():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
-
+# Maps chooseProjectComponent() function as handler for address '/projects/project-component/<id>'
+# Renders ./templates/projects/functions/choose_component.html
 @projects.route('/project-component/<id>', methods=['GET', 'POST'])
 def chooseProjectComponent(id):
     projectComponent = ProjectComponent.query.get_or_404(id)
@@ -133,7 +150,8 @@ def chooseProjectComponent(id):
 
     return render_template('projects/functions/choose_component.html', pagination=pagination, search=search, projectComponent=projectComponent, project=projectComponent.project, referrer=referrer)
 
-
+# Maps addProjectComponentId() function as handler for address '/projects/project-component/add-component'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @projects.route('/project-component/add-component', methods=['POST'])
 def addProjectComponentId():
     jsonData = json.loads(request.data)
@@ -146,6 +164,8 @@ def addProjectComponentId():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
+# Maps editProjectComponentAmount() function as handler for address '/projects/project-component/amount'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @projects.route('/project-component/amount', methods=['POST'])
 def editProjectComponentAmount():
     jsonData = json.loads(request.data)
@@ -158,6 +178,8 @@ def editProjectComponentAmount():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
+# Maps editProjectComponentComment() function as handler for address '/projects/project-component/comment'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @projects.route('/project-component/comment', methods=['POST'])
 def editProjectComponentComment():
     jsonData = json.loads(request.data)
@@ -170,6 +192,8 @@ def editProjectComponentComment():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
+# Maps deleteProjectComponent() function as handler for address '/projects/project-component/delete'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @projects.route('/project-component/delete', methods=['POST'])
 def deleteProjectComponent():
     jsonData = json.loads(request.data)
@@ -180,6 +204,8 @@ def deleteProjectComponent():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.jss
 
+# Maps build() function as handler for address '/projects/build/<id>'
+# Renders ./templates/projects/functions/build_project.html
 @projects.route('/build/<id>', methods=['GET','POST'])
 def build(id):
 
@@ -199,10 +225,11 @@ def build(id):
         db.session.commit()
                     
     inProgressComponents = projectComponents.filter(ProjectComponent.build_amount.isnot(None)).all()
-    if len(inProgressComponents) is not 0:
+    if len(inProgressComponents) != 0:
         return render_template('projects/functions/build_project.html', project=project, projectComponents=inProgressComponents)
     else:
         return abort(404)
+
 
 @projects.route('/build/end', methods=['POST'])
 def endBuild():
@@ -216,6 +243,8 @@ def endBuild():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
+# Maps removeComponentsForBuild() function as handler for address '/projects/build'
+# Renders ./templates/projects/functions/build_project.html
 @projects.route('/project-component/build', methods=['POST'])
 def removeComponentsForBuild():
     id = None if request.form.get('id') == '' else request.form.get('id')
@@ -240,11 +269,31 @@ def removeComponentsForBuild():
 
     # Check if any components left in build
     inProgressComponents = projectComponents.filter(ProjectComponent.build_amount.isnot(None)).all()
-    if len(inProgressComponents) is not 0:
+    if len(inProgressComponents) != 0:
         return render_template('projects/functions/build_project.html', project=project, projectComponents=inProgressComponents)
     else:
         buildMax = findMax(projectComponents)
         flash('Finished building project!', category='success')
         return render_template('projects/functions/view_project.html', project=project, projectComponents=projectComponents, buildMax=buildMax)
         
-
+# Maps importFromBOM() function as handler for address '/projects/import/<id>'
+# Renders ----
+@projects.route('/import/<id>', methods=['GET', 'POST'])
+def importFromBOM(id):
+    
+    components = []
+    if request.method == 'POST': # https://flask.palletsprojects.com/en/2.2.x/patterns/fileuploads/
+        if 'file' not in request.files:
+            flash('No file part!', category='error')
+        else:
+            allowedExtensions = {'csv'}
+            file = request.files['file']
+            if file.filename == '':
+                flash('No selected file!', category='error')
+            else:
+                if allowedFile(file.filename, allowedExtensions):
+                    # TODO: Implement BOM importing
+                    return
+        
+        
+        return render_template('components/functions/import_components.html', components=components)

@@ -4,9 +4,16 @@ from .. import db, config
 from ..helper import componentErrors, allowedFile
 import json
 
+# Creating Blueprint, URL prefix is '/components'
 components = Blueprint('components', __name__)
+
+# Number of results to show per page as per configuration
 per_page = config['settings']['resultsPerPage']
 
+# Maps list() function as handler for address '/components'
+# Used to render a list of all components
+# Queries components based on search and how many to show per page
+# Renders ./templates/components/components.html template with query result
 @components.route('/', methods=['GET', 'POST'])
 def list():
     search = None if request.args.get('search') == '' else request.args.get('search')
@@ -27,13 +34,15 @@ def list():
     
     return render_template('components/components.html', pagination=pagination, search=search)
 
+# Maps add() function as handler for address '/components/add'
+# Renders ./templates/components/functions/add_component.html
 @components.route('/add', methods=['GET', 'POST'])
 def add():
 
     # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
     list = ['edit','add','view','remove']
-    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+    if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
 
     if request.method == 'POST':
@@ -58,8 +67,15 @@ def add():
 
     return render_template('components/functions/add_component.html', referrer=referrer)
 
+# Maps import() function as handler for address '/components/import'
+# Renders ./templates/components/functions/import_components.html
 @components.route('/import', methods=['GET', 'POST'])
 def importComponents():
+    referrer = None
+    list = ['edit','add','view','remove','import']
+    if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+        referrer=request.referrer
+
     components = []
     if request.method == 'POST': # https://flask.palletsprojects.com/en/2.2.x/patterns/fileuploads/
         if 'file' not in request.files:
@@ -92,7 +108,7 @@ def importComponents():
                                 minimumAmount = jsonComponent.get('minimumAmount')
                                 url = jsonComponent.get('url')
 
-                                if amount and amount < 0:
+                                if (amount and amount < 0) or (minimumAmount and minimumAmount < 0):
                                     componentAmountError += 1
                                 else:
                                     component = Component(name=name, location=location, value=value, 
@@ -100,14 +116,19 @@ def importComponents():
                                     components.append(component)
                             else:
                                 componentFieldError += 1
+                        errorMsg = []
                         if componentAmountError > 0:
-                            flash(f'Failed to import {componentAmountError} component(s) because their amounts are less than 0!', category='error')
+                            errorMsg.append(f'Failed to import {componentAmountError} component(s) because their amount or minimum amount are less than 0')
                         if componentFieldError > 0:
-                            flash(f'Failed to import {componentFieldError} component(s) because they don\'t have a name!', category='error')
+                            errorMsg.append(f'Failed to import {componentFieldError} component(s) because they are missing the required field(s)')
+                        if errorMsg:
+                            flash(' & '.join(errorMsg), category='error')
                     else:
                         flash('Incorrect formatting! Couldn\'t find the \"components\" field.', category='error')
-    return render_template('components/functions/import_components.html', components=components)
+    return render_template('components/functions/import_components.html', components=components, referrer=referrer)
 
+# Maps importConfirmed() function as handler for address '/components/import/confirm'
+# Renders ./templates/components/components.html
 @components.route('/import/confirm', methods=['POST'])
 def importConfirmed():
 
@@ -137,7 +158,8 @@ def importConfirmed():
 
     return redirect(url_for('components.list'))
 
-
+# Maps addProjectComponent() function as handler for address '/components/add/projectComponent/<id>'
+# Renders ./templates/projects/functions/view_project.html
 @components.route('/add/projectComponent/<id>', methods=['GET', 'POST'])
 def addProjectComponent(id):
     projectComponent = ProjectComponent.query.get_or_404(id)
@@ -145,7 +167,7 @@ def addProjectComponent(id):
     # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
     list = ['edit','add','view','remove']
-    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+    if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
 
     if request.method == 'POST':
@@ -173,6 +195,8 @@ def addProjectComponent(id):
 
     return render_template('components/functions/add_component.html', referrer=referrer)
 
+# Maps view() function as handler for address '/components/view/<id>'
+# Renders ./templates/components/functions/view_component.html
 @components.route('/view/<id>')
 def view(id):
     component = Component.query.get_or_404(id)
@@ -180,11 +204,13 @@ def view(id):
     # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
     list = ['edit','add','components/view','remove']
-    if not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
+    if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
 
     return render_template('components/functions/view_component.html', component=component, referrer=referrer)
 
+# Maps edit() function as handler for address '/components/edit/<id>'
+# Renders ./templates/components/functions/edit_component.html
 @components.route('/edit/<id>', methods=['GET', 'POST'])
 def edit(id):
     component = Component.query.get_or_404(id)
@@ -215,6 +241,8 @@ def edit(id):
 
     return render_template('components/functions/edit_component.html', component=component)
 
+# Maps delete() function as handler for address '/components/delete'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @components.route('/delete', methods=['POST'])
 def delete():
     component = json.loads(request.data)
@@ -226,8 +254,10 @@ def delete():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
+# Maps addOne() function as handler for address '/components/add-one'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @components.route('/add-one', methods=['POST'])
-def add_one():
+def addOne():
     component = json.loads(request.data)
     componentId = component['componentId']
     component = Component.query.get_or_404(componentId)
@@ -236,8 +266,10 @@ def add_one():
         db.session.commit()
     return jsonify({}) # Function is used in static/custom.js
 
+# Maps removeOne() function as handler for address '/components/remove-one'
+# Function is used for JavaScript functions found in '/static/custom.js'
 @components.route('/remove-one', methods=['POST'])
-def remove_one():
+def removeOne():
     component = json.loads(request.data)
     componentId = component['componentId']
     component = Component.query.get_or_404(componentId)

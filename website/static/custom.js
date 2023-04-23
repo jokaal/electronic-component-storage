@@ -1,3 +1,4 @@
+// Used to send a delete request to components controller
 function deleteComponent(componentId) {
     if (confirm("Are you sure you want to delete this component?\nThe component is also removed from any project that uses it.") == true) {
         fetch("/components/delete", {
@@ -9,6 +10,7 @@ function deleteComponent(componentId) {
     }
 }
 
+// Used to increase components amount
 function addOne(componentId) {
     fetch("/components/add-one", {
         method: "POST",
@@ -21,6 +23,7 @@ function addOne(componentId) {
     })
 }
 
+// Used to decrease components amount
 function removeOne(componentId) {
     fetch("/components/remove-one", {
         method: "POST",
@@ -35,6 +38,7 @@ function removeOne(componentId) {
     })
 }
 
+// Used to send a delete request to projects controller
 function deleteProject(projectId) {
     if (confirm("Are you sure you want to delete this project?") == true) {
         fetch("/projects/delete", {
@@ -46,6 +50,7 @@ function deleteProject(projectId) {
     }
 }
 
+// Used to add a project component to a project
 function addComponentToProject(projectId) {
     fetch("/projects/project-component/add", {
         method: "POST",
@@ -55,6 +60,8 @@ function addComponentToProject(projectId) {
     })
 }
 
+
+// Used to choose a component for a project component
 function chooseComponentForProject(projectComponentId, componentId, projectId) {
     fetch("/projects/project-component/add-component", {
         method: "POST",
@@ -64,6 +71,7 @@ function chooseComponentForProject(projectComponentId, componentId, projectId) {
     })
 }
 
+// Used to edit project component amount
 function editProjectComponentAmount(projectComponentId, projectId) {
     var answer = prompt("Enter a number: "); // https://stackoverflow.com/questions/46552085/javascript-force-specific-data-type-input-or-accept-only-digits-in-input
     if (answer == null) return;
@@ -80,6 +88,8 @@ function editProjectComponentAmount(projectComponentId, projectId) {
     })
 }
 
+
+// Used to edit project component comment
 function editProjectComponentComment(projectComponentId, projectId) {
     var answer = prompt("Add a new comment (leave empty to delete): ");
     if (answer == null) return;
@@ -91,6 +101,7 @@ function editProjectComponentComment(projectComponentId, projectId) {
     })
 }
 
+// Used to send a delete project component request to projects controller
 function deleteProjectComponent(projectComponentId, projectId) {
     if (confirm("Are you sure you want to delete this project component?") == true) {
         fetch("/projects/project-component/delete", {
@@ -102,6 +113,7 @@ function deleteProjectComponent(projectComponentId, projectId) {
     }
 }
 
+// Used to end a in-progress build
 function endBuild(projectId) {
     if (confirm("Are you sure you want to end this build?\nThis will NOT reduce the components amounts in storage.") == true) {
         fetch("/projects/build/end", {

@@ -1,6 +1,6 @@
 {
     "database": {
-        "runLocally": true,
+        "useSQLite": true,
         "dropDatabase": false,
         "dbName": "database.db",
         "dbServer": "",

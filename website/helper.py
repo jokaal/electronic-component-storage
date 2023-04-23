@@ -3,7 +3,11 @@ import re, sys, math
 from .database.models import Project, ProjectComponent, Component
 from . import db, config
 
-def componentErrors(component):
+# A helper function to help validate components coming from a request
+# Component must have a name & the URL must be valid or None
+# If there are errors then they are flashed using Flasks in-built flash system
+# Returns false if there are no errors, true if there are
+def componentErrors(component: Component) -> bool:
     errors = False
     messages = []
 
@@ -33,7 +37,11 @@ def componentErrors(component):
 
     return errors
 
-def projectErrors(project):
+# A helper function to help validate projects coming from a request
+# Component must have a name
+# If there are errors then they are flashed using Flasks in-built flash system
+# Returns False if there are no errors, True if there are
+def projectErrors(project: Project) -> bool:
     errors = False
     messages = []
 
@@ -46,7 +54,11 @@ def projectErrors(project):
 
     return errors
 
-def findMax(projectComponents):
+# A helper function to help find the maximum build amount for a project
+# Iterates and checks every ProjectComponent to see if Component is set
+# If Component is set then checks how many are needed to build and how many are in storage
+# Returns the calculated integer for maximum build amount
+def findMax(projectComponents: list[ProjectComponent]) -> int:
     buildMax = sys.maxsize
     for projectComponent in projectComponents:
         amountNeeded = projectComponent.amount
@@ -61,6 +73,9 @@ def findMax(projectComponents):
                 buildMax = canBuild if canBuild < buildMax else buildMax
     return buildMax
 
-def allowedFile(fileName, allowed):
+# A helper function used to check if file type is allowed
+# Uses the file name and a dictionary of allowed extensions i.e. {'json'}
+# Returns True if allowed, otherwise False
+def allowedFile(fileName: str, allowed: dict[str]) -> bool:
     return '.' in fileName and \
            fileName.rsplit('.', 1)[1].lower() in allowed
