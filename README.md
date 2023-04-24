@@ -18,11 +18,10 @@ git clone https://github.com/jokaal/electronic-component-storage.git
 ```
 mysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}
 ```
-3. Install the required frameworks and libraries.
+3. Install the required frameworks and libraries. Requirements are found in the requirements.txt file, to install them make sure you are located in your cloned repository:
 
 > NOTE! If you are not installing the application on a server and don't want to install the required libraries on your global Python interpreter then create and use a virtual environment ([Documentation](https://docs.python.org/3/library/venv.html)).
 
-Requirements are found in the requirements.txt file, to install them make sure you are located in your cloned repository:
 ```
 pip install -r requirements.txt
 ```
@@ -42,7 +41,7 @@ waitress-serve --host 127.0.0.1 --port 8001 --call website:create_app
 
 ## Development
 
-For development it is recommended to use the built-in server as it allows for debugging and automatically refreshes after file changes. Running the development server is done by running the code found in *main.py*.
+For development it is recommended to use the built-in server as it allows for debugging and automatically refreshes after saving a file. Running the development server is done by running the code found in *main.py*.
 
 ### TODO list:
 

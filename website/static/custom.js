@@ -16,10 +16,19 @@ function addOne(componentId) {
         method: "POST",
         body: JSON.stringify({ componentId: componentId }),
     }).then((_res) => {
+
+        // Change value for end user
         divId = 'amount-' + componentId;
         amountDiv = document.getElementById(divId);
         amount = parseInt(amountDiv.innerHTML);
         amountDiv.innerHTML = amount + 1;
+
+        // Change color from red
+        if (amountDiv.innerHTML > 0) {
+            rowId = 'row-' + componentId;
+            row = document.getElementById(rowId);
+            row.classList.remove("table-danger");
+        }
     })
 }
 
@@ -32,8 +41,18 @@ function removeOne(componentId) {
         divId = 'amount-' + componentId;
         amountDiv = document.getElementById(divId);
         amount = parseInt(amountDiv.innerHTML);
+
+        // Only reduce amount if it's larger than 0
         if (amount > 0) {
             amountDiv.innerHTML = amount - 1;
+
+            // Change color to red if amount is now 0
+            if (amountDiv.innerHTML < 1) {
+                rowId = 'row-' + componentId;
+                row = document.getElementById(rowId);
+                row.classList.add("table-danger");
+            }
+
         }
     })
 }
@@ -55,9 +74,8 @@ function addComponentToProject(projectId) {
     fetch("/projects/project-component/add", {
         method: "POST",
         body: JSON.stringify({ projectId: projectId }),
-    }).then((_res) => {
-        window.location.href = "/projects/view/" + projectId;
-    })
+    }).then(response => response.json())
+    .then(json => window.location.href = "/projects/project-component/" + json.id)
 }
 
 

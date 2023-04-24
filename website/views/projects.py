@@ -120,7 +120,7 @@ def addProjectComponent():
         projectComponent = ProjectComponent(project_id=projectId)
         db.session.add(projectComponent)
         db.session.commit()
-    return jsonify({}) # Function is used in static/custom.js
+    return jsonify({"id": projectComponent.id}) # Function is used in static/custom.js
 
 # Maps chooseProjectComponent() function as handler for address '/projects/project-component/<id>'
 # Renders ./templates/projects/functions/choose_component.html
@@ -230,7 +230,8 @@ def build(id):
     else:
         return abort(404)
 
-
+# Maps endBuild() function as handler for address '/projects/build/<id>'
+# Renders ./templates/projects/functions/build_project.html
 @projects.route('/build/end', methods=['POST'])
 def endBuild():
     project = json.loads(request.data)

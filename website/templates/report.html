@@ -17,7 +17,11 @@ Report
     </thead>
     <tbody>
         {% for component in components %}
-        <tr>
+        <tr
+        {% if component.amount == 0 %}
+        class="table-danger"
+        {% endif %}
+        >
             <td>
                 <a href="/components/view/{{component.id}}">{{ component.name }}</a>
             </td>

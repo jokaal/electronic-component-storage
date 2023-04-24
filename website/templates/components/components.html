@@ -35,7 +35,11 @@ Components
     </thead>
     <tbody>
         {% for component in pagination.items %}
-        <tr>
+        <tr id="row-{{component.id}}"
+        {% if component.amount == 0 %}
+        class="table-danger"
+        {% endif %}
+        >
             <td>
                 <a href="/components/view/{{component.id}}">{{ component.name }}</a>
             </td>
