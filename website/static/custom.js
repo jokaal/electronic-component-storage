@@ -142,3 +142,14 @@ function endBuild(projectId) {
         })
     }
 }
+
+// Used to clone a project
+function cloneProject(projectId) {
+    var answer = prompt("Enter a name for the new project: ");
+    if (answer == null) return;
+    fetch("/projects/clone", {
+        method: "POST",
+        body: JSON.stringify({ projectId: projectId, name: answer }),
+    }).then(response => response.json())
+    .then(json => window.location.href = "/projects/view/" + json.id)
+}

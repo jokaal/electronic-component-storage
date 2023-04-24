@@ -276,7 +276,36 @@ def removeComponentsForBuild():
         buildMax = findMax(projectComponents)
         flash('Finished building project!', category='success')
         return render_template('projects/functions/view_project.html', project=project, projectComponents=projectComponents, buildMax=buildMax)
-        
+
+
+# Maps clone() function as handler for address '/projects/clone'
+# Renders ./templates/projects/functions/view_project.html
+@projects.route('/clone', methods=['POST'])
+def clone():
+    project = json.loads(request.data)
+    projectId = project['projectId']
+    name = project['name']
+    project = Project.query.get_or_404(projectId)
+    if project and name:
+
+        newProject = Project(name=name)
+
+        db.session.add(newProject)
+        db.session.commit()
+
+        projectComponents = ProjectComponent.query.filter_by(project_id=project.id)
+
+        for projectComponent in projectComponents:
+            newProjectComponent = ProjectComponent(
+                project_id=newProject.id,
+                component_id=projectComponent.component_id,
+                amount=projectComponent.amount,
+                comment=projectComponent.comment
+            )
+            db.session.add(newProjectComponent)
+        db.session.commit()
+    return jsonify({"id": newProject.id}) # Function is used in static/custom.js
+
 # Maps importFromBOM() function as handler for address '/projects/import/<id>'
 # Renders ----
 @projects.route('/import/<id>', methods=['GET', 'POST'])

@@ -9,6 +9,9 @@ Project
 <h5><a href="/projects">Back</a></h5>
 {% endif %}
 <h1>Project: {{ project.name }}
+    <button class="btn btn-sm btn-secondary rounded-pill" onClick="cloneProject({{ project.id }})">
+        <i class="fa fa-clone" aria-hidden="true"></i> Clone
+    </button>
     <button class="btn btn-sm btn-warning rounded-circle" style="width: 31px;" onClick="window.location.href='../edit/{{project.id}}'">
         <i class="fa fa-pencil" aria-hidden="true"></i>
     </button>
