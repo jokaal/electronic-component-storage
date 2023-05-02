@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}
+Components
+{% endblock %}
+{% block content %}
+<h5><a href="/projects/view/{{project.id}}">Back</a></h5>
+<h1 style="display: inline-block; padding-right: 5px; padding-bottom: 5px;">
+    Importing BOM for {{project.name}}
+</h1>
+{% if temporaryComponents %}
+<h5>
+    Check through all the components and then confirm if everything looks right.
+</h5>
+<form method="post" action="/projects/import/{{project.id}}/confirm">
+    <h3>Components matched from database:</h3>
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Value</th>
+                <th scope="col">Location</th>
+                <th scope="col">Comment</th>
+                <th scope="col">Amount needed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for component in temporaryComponents %}
+            {% if component.isMatchingComponent %}
+            <tr>
+                <td>
+                    {{ component.name }}
+                </td>
+                <td style="width: 10%;">
+                    {% if component.value %}
+                        {{ component.value }}
+                    {% endif %}
+                </td>
+                <td style="width: 20%;">
+                    {% if component.location %}
+                        {{ component.location }}
+                    {% endif %}
+                </td>
+                <td style="width: 30%;">
+                    {% if component.comment %}
+                        {{ component.comment }}
+                    {% endif %}
+                </td> 
+                <td style="width: 5%;">
+                    {% if component.amount %}
+                        {{ component.amount }}
+                    {% endif %}
+                </td> 
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Components not found in database:</h3>
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Value</th>
+                <th scope="col">Location</th>
+                <th scope="col">Comment</th>
+                <th scope="col">Amount needed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for component in temporaryComponents %}
+            {% if not component.isMatchingComponent %}
+            <tr>
+                <td>
+                    {{ component.name }}
+                </td>
+                <td style="width: 10%;">
+                    {% if component.value %}
+                        {{ component.value }}
+                    {% endif %}
+                </td>
+                <td style="width: 20%;">
+                    {% if component.location %}
+                        {{ component.location }}
+                    {% endif %}
+                </td>
+                <td style="width: 30%;">
+                    {% if component.comment %}
+                        {{ component.comment }}
+                    {% endif %}
+                </td> 
+                <td style="width: 5%;">
+                    {% if component.amount %}
+                        {{ component.amount }}
+                    {% endif %}
+                </td> 
+            </tr>
+            {% endif %}
+            <input name="temporaryComponents" id="temporaryComponents" type="hidden" value="{{component.toJson()}}">
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h6>Note: Not found components will be automatically added to the database with their amounts set to 0.</h6>
+    <button type="submit" class="btn btn-primary">Confirm</button>
+</form>
+
+
+{% else %}
+<div>
+    <h5>
+        Import multiple components by uploading a .csv file
+    </h5>
+    <details>
+        <summary></summary>
+        <div class="ml-3 bg-light border rounded w-50">
+            <pre id="text"></pre>
+            <p>The CSV file structure is important!</p>
+            <p>When exporting from EagleCAD version 7 do the following steps:</p>
+            <p>
+                1. File -> Export -> BOM
+            </p>
+            <p>
+                2. Set List type to Values
+            </p>
+            <p>
+                3. Enable List attributes
+            </p>
+            <p>
+                4. Set output format as CSV
+            </p>
+        </div>
+    </details>
+    
+</div>
+<div class="w-25 mt-3">
+    <form method="POST" enctype="multipart/form-data">
+        <input class="form-control mb-3" type=file name=file id="file">
+        <button type="submit" class="btn btn-primary">Import</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

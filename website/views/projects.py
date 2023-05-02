@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, abort
 from ..database.models import Project, ProjectComponent, Component
 from .. import db, config
-from ..helper import projectErrors, findMax, allowedFile
-import json, csv
+from ..helper import projectErrors, findMax, allowedFile, matchesStructure, TemporaryProjectComponent
+import json, csv, io
 
 # Creating Blueprint, URL prefix is '/components'
 projects = Blueprint('projects', __name__)
@@ -38,10 +38,9 @@ def create():
 
     # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
-    list = ['edit','create','view','build','project-component']
+    list = ['edit','create','view','build','project-component','import']
     if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
-
 
     if request.method == 'POST':
         name = None if request.form.get('name') == '' else request.form.get('name') # Form return an empty string if not filled but we need null for database
@@ -72,7 +71,7 @@ def view(id):
 
     # Referrer allows saving search but it's lost after another function and creates an infinite loop.
     referrer = None
-    list = ['edit','create','view','build','project-component']
+    list = ['edit','create','view','build','project-component','import']
     if request.referrer and not any([x in request.referrer for x in list]): # https://stackoverflow.com/questions/3389574/check-if-multiple-strings-exist-in-another-string
         referrer=request.referrer
 
@@ -307,11 +306,13 @@ def clone():
     return jsonify({"id": newProject.id}) # Function is used in static/custom.js
 
 # Maps importFromBOM() function as handler for address '/projects/import/<id>'
-# Renders ----
+# Renders ./templates/projects/functions/import_materials.html
 @projects.route('/import/<id>', methods=['GET', 'POST'])
 def importFromBOM(id):
     
-    components = []
+    temporaryComponents = []
+    project = Project.query.get_or_404(id)
+
     if request.method == 'POST': # https://flask.palletsprojects.com/en/2.2.x/patterns/fileuploads/
         if 'file' not in request.files:
             flash('No file part!', category='error')
@@ -322,8 +323,114 @@ def importFromBOM(id):
                 flash('No selected file!', category='error')
             else:
                 if allowedFile(file.filename, allowedExtensions):
-                    # TODO: Implement BOM importing
-                    return
+
+                    # EXAMPLE STRUCTURE:
+                    # "Qty";"Value";"Device";"Package";"Parts";"Description";"";
+                    # "1";"";"ADA4432-1";"SOT23-6";"U1";"";"";\n"1";"";"PINHD-1X6";"1X06";"JP1";"PIN HEADER";"";
+                    # "2";"1u";"C-EUC0805K";"C0805K";"C7, C8";"CAPACITOR, European symbol";"";
+
+                    stream = io.StringIO(file.stream.read().decode('UTF-8'), newline=None)
+                    csvReader = csv.reader(stream, delimiter=";", quotechar='"', escapechar="\\")
+                    if matchesStructure(next(csvReader)):
+                        for row in csvReader:
+                            quantity = row[0]
+                            value = row[1]
+                            device = row[2]
+                            package = row[3]
+                            parts = row[4]
+                            description = row[5]
+                        
+                            newProjectComponent = TemporaryProjectComponent(project.id, quantity)
+                            newProjectComponent.comment = parts
+                            
+                            # TRY TO FIND COMPONENT(S) WITH SAME NAME
+                            query = Component.query.filter_by(name = device).all()
+                            # IF FOUND ONE THEN MATCH THE COMPONENT
+                            if len(query) == 1:
+                                newProjectComponent.setFoundComponentId(query[0].id)
+                                newProjectComponent.setComponentValues(
+                                        name=query[0].name,
+                                        location=query[0].location,
+                                        value=query[0].value,
+                                        description=query[0].description,
+                                        amount=query[0].amount,
+                                        minimumAmount=query[0].minimum_amount,
+                                        url=query[0].url
+                                    )
+                            # IF FOUND MULTIPLE THEN TRY TO FIND ONE WITH MATCHING VALUE
+                            elif len(query) > 1:
+                                queryWithValue = Component.query.filter_by(name=device, value=value).first()
+                                if queryWithValue:
+                                    newProjectComponent.setFoundComponentId(queryWithValue.id)
+                                    newProjectComponent.setComponentValues(
+                                        name=queryWithValue.name,
+                                        location=queryWithValue.location,
+                                        value=queryWithValue.value,
+                                        description=queryWithValue.description,
+                                        amount=queryWithValue.amount,
+                                        minimumAmount=queryWithValue.minimum_amount,
+                                        url=queryWithValue.url
+                                    )
+                                # IF DIDN'T FIND ONE WITH MATCHING VALUE THEN CREATE NEW COMPONENT
+                                else:
+                                    newProjectComponent.setComponentValues(
+                                        name=device,
+                                        location=None,
+                                        value=value,
+                                        description=description,
+                                        amount=0,
+                                        minimumAmount=None,
+                                        url=None
+                                    )
+                            # IF DIDN'T FIND ANY MATCHING COMPONENTS THEN CREATE NEW COMPONENT
+                            else:
+                                newProjectComponent.setComponentValues(
+                                        name=device,
+                                        location=None,
+                                        value=value,
+                                        description=description,
+                                        amount=0,
+                                        minimumAmount=None,
+                                        url=None
+                                    )
+                            temporaryComponents.append(newProjectComponent)
+                    else:
+                        flash('Incorrect file structure!', category='error')
+                    
+    return render_template('projects/functions/import_materials.html', project=project, temporaryComponents=temporaryComponents)
+
+# Maps importFromBOM() function as handler for address '/projects/import/<id>'
+# Renders ./templates/projects/functions/view_component.html
+@projects.route('/import/<id>/confirm', methods=['POST'])
+def confirmImport(id):
+    project = Project.query.get_or_404(id)
+    temporaryComponentsAsJson = request.form.getlist('temporaryComponents')
+    for temporaryComponentJson in temporaryComponentsAsJson:
+        component = json.loads(temporaryComponentJson)
+        # CREATE NEW PROJECT COMPONENT WITHOUT COMPONENT ID
+        newProjectComponent = ProjectComponent(
+            project_id = id,
+            amount = None if component["amount"] == '' else component["amount"],
+            comment = None if component["comment"] == '' else component["comment"]
+        )
+        # ADD MATCHING COMPONENT ID TO PROJECT COMPONENT
+        if component["isMatchingComponent"]:
+            newProjectComponent.component_id = None if component["componentId"] == '' else component["componentId"]
+        # CREATE A NEW COMPONENT AND ADD NEW ID TO PROJECT COMPONENT
+        else:
+            newComponent = Component(
+                name = None if component["name"] == '' else component["name"],
+                location = None if component["location"] == '' else component["location"],
+                value = None if component["value"] == '' else component["value"],
+                description = None if component["description"] == '' else component["description"],
+                amount = None if component["componentAmount"] == '' else component["componentAmount"],
+                minimum_amount = None if component["minimumAmount"] == '' else component["minimumAmount"],
+                url = None if component["url"] == '' else component["url"]
+            )
+            db.session.add(newComponent)
+            db.session.flush()
+            newProjectComponent.component_id = newComponent.id
+        db.session.add(newProjectComponent)
+    db.session.commit()
         
-        
-        return render_template('components/functions/import_components.html', components=components)
+    return redirect(url_for('projects.view', id=id))

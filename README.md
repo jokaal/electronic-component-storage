@@ -45,8 +45,8 @@ For development it is recommended to use the built-in server as it allows for de
 
 ### TODO list:
 
-1. BOM importing for projects
-2. Copy project to new project
+1. ~~BOM importing for projects~~
+2. ~~Copy project to new project~~
 3. Export and import current storage state
 
 This is a very minimalistic solution for component storage tracking and as such it is missing many features that other solutions might have. To make developing easier for the future, code is kept well documented and application architecture has to be solid.

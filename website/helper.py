@@ -1,5 +1,5 @@
 from flask import flash
-import re, sys, math
+import re, sys, math, json
 from .database.models import Project, ProjectComponent, Component
 from . import db, config
 
@@ -74,8 +74,55 @@ def findMax(projectComponents: list[ProjectComponent]) -> int:
     return buildMax
 
 # A helper function used to check if file type is allowed
-# Uses the file name and a dictionary of allowed extensions i.e. {'json'}
+# Uses the file name and a list of allowed extensions i.e. ['json']
 # Returns True if allowed, otherwise False
-def allowedFile(fileName: str, allowed: dict[str]) -> bool:
+def allowedFile(fileName: str, allowed: list[str]) -> bool:
     return '.' in fileName and \
            fileName.rsplit('.', 1)[1].lower() in allowed
+
+# A helper function used to check if csv file matches the required structure
+# A correct structure looks like this: Qty;"Value";"Device";"Package";"Parts";"Description";"";
+# Return True if matching, otherwise False
+def matchesStructure(csvRow: list) -> bool:
+    return csvRow[0] == 'Qty' and \
+           csvRow[1] == 'Value' and \
+           csvRow[2] == 'Device' and \
+           csvRow[4] == 'Parts' and \
+           csvRow[5] == 'Description'
+
+# A helper class used to create a temporary project component object
+# Used while importing components to a project
+class TemporaryProjectComponent:
+
+    def __init__(self, projectId, amount):
+        self.projectId = projectId
+        self.amount = amount
+
+        self.comment = None
+        self.isMatchingComponent = False
+        self.componentId = None
+
+        self.name = None
+        self.location = None
+        self.value = None
+        self.description = None
+        self.componentAmount = None
+        self.minimumAmount = None
+        self.url = None
+
+    def setFoundComponentId(self, componentId):
+        self.componentId = componentId
+        self.isMatchingComponent = True
+
+    def setComponentValues(self, name, location, value, description, amount, minimumAmount, url):
+        self.name = name
+        self.location = location
+        self.value = value
+        self.description = description
+        self.componentAmount = amount
+        self.minimumAmount = minimumAmount
+        self.url = url
+
+    # https://stackoverflow.com/questions/3768895/how-to-make-a-class-json-serializable
+    def toJson(self):
+        return json.dumps(self, default=lambda o: o.__dict__)

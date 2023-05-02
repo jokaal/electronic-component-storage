@@ -81,7 +81,7 @@ def importComponents():
         if 'file' not in request.files:
             flash('No file part!', category='error')
         else:
-            allowedExtensions = {'json'}
+            allowedExtensions = ['json']
             file = request.files['file']
             if file.filename == '':
                 flash('No selected file!', category='error')
@@ -149,11 +149,11 @@ def importConfirmed():
         minimumAmount = None if minimumAmounts[i] == 'None' else minimumAmounts[i]
         url = None if urls[i] == 'None' else urls[i]
 
-        new_component = Component(name=name, location=location, value=value, 
+        newComponent = Component(name=name, location=location, value=value, 
                                   description=description, amount=amount, minimum_amount=minimumAmount, url=url)
         
-        if not componentErrors(new_component):
-            db.session.add(new_component)
+        if not componentErrors(newComponent):
+            db.session.add(newComponent)
             db.session.commit()
 
     return redirect(url_for('components.list'))
@@ -179,19 +179,19 @@ def addProjectComponent(id):
         minimumAmount = None if request.form.get('minimumAmount') == '' else request.form.get('minimumAmount')
         url = None if request.form.get('url') == '' else request.form.get('url')
         
-        new_component = Component(name=name, location=location, value=value, 
+        newComponent = Component(name=name, location=location, value=value, 
                                   description=description, amount=amount, minimum_amount=minimumAmount, url=url)
         
-        if not componentErrors(new_component):
-            db.session.add(new_component)
+        if not componentErrors(newComponent):
+            db.session.add(newComponent)
             db.session.flush()
-            projectComponent.component_id = new_component.id
+            projectComponent.component_id = newComponent.id
             db.session.add(projectComponent)
             db.session.commit()
             flash(f'Component \'{name}\' has been added and selected for project \'{projectComponent.project.name}\'!', category='success')
             return redirect(url_for('projects.view', id=projectComponent.project_id))
         else:
-            return render_template('components/functions/add_component.html', component=new_component)
+            return render_template('components/functions/add_component.html', component=newComponent)
 
     return render_template('components/functions/add_component.html', referrer=referrer)
 
